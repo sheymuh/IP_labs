@@ -1,4 +1,4 @@
-package ru.ulstu.is.server.api;
+package ru.ulstu.is.server.api.category;
 
 public class CategoryDto {
     private final int id;

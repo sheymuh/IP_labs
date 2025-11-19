@@ -1,4 +1,4 @@
-package ru.ulstu.is.server.api;
+package ru.ulstu.is.server.api.playlist;
 
 public class PlaylistDto {
     private final int id;

@@ -1,7 +1,10 @@
-package ru.ulstu.is.server.api;
+package ru.ulstu.is.server.api.stream;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonProperty.Access;
+
+import ru.ulstu.is.server.api.category.CategoryDto;
+import ru.ulstu.is.server.api.playlist.PlaylistDto;
 
 public class StreamDto {
     @JsonProperty(access = Access.READ_ONLY)

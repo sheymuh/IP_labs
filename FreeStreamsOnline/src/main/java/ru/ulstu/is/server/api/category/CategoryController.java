@@ -1,4 +1,4 @@
-package ru.ulstu.is.server.api;
+package ru.ulstu.is.server.api.category;
 
 import java.util.List;
 
@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import ru.ulstu.is.server.api.NotFoundException;
 import ru.ulstu.is.server.configuration.Constants;
 
 @RestController
