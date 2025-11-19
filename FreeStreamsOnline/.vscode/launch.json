@@ -1,0 +1,20 @@
+{
+    "configurations": [
+        {
+            "type": "java",
+            "name": "ServerApplication",
+            "request": "launch",
+            "mainClass": "ru.ulstu.is.server.ServerApplication",
+            "projectName": ""
+        },
+        {
+            "type": "java",
+            "name": "Server",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "mainClass": "ru.ulstu.is.server.ServerApplication",
+            "projectName": "lec1",
+            "envFile": "${workspaceFolder}/.env"
+        }
+    ]
+}
