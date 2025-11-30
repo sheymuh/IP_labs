@@ -1,66 +1,53 @@
 package ru.ulstu.is.server.api.category;
 
 import java.util.List;
-import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.atomic.AtomicInteger;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import ru.ulstu.is.server.api.NotFoundException;
+import jakarta.validation.Valid;
 import ru.ulstu.is.server.configuration.Constants;
+import ru.ulstu.is.server.service.CategoryService;
 
 @RestController
 @RequestMapping(Constants.API_URL + CategoryController.URL)
 public class CategoryController {
     public static final String URL = "/category";
-    private final ConcurrentLinkedQueue<CategoryDto> categories;
-    private final Logger log = LoggerFactory.getLogger(CategoryController.class);
-    private final AtomicInteger idGenerator = new AtomicInteger();
 
-    public CategoryController() {
-        this.categories = new ConcurrentLinkedQueue<>(List.of(
-                new CategoryDto(idGenerator.incrementAndGet(), "jst vibing"),
-                new CategoryDto(idGenerator.incrementAndGet(), "letsplay"),
-                new CategoryDto(idGenerator.incrementAndGet(), "cooking")));
+    public final CategoryService categoryService;
+
+    public CategoryController(CategoryService categoryService) {
+        this.categoryService = categoryService;
     }
 
     @GetMapping
-    public List<CategoryDto> getAll() {
-        log.debug("Get all categories");
-        return categories.stream().toList();
+    public List<CategoryRs> getAll() {
+        return categoryService.getAll();
     }
 
     @GetMapping("/{id}")
-    public CategoryDto get(@PathVariable("id") int id) {
-        log.debug("Get stream with id {}", id);
-        log.debug("Available streams IDs: {}", categories.stream().map(CategoryDto::getId).toList());
-        return categories.stream()
-                .filter(category -> category.getId() == id)
-                .findAny()
-                .orElseThrow(() -> new NotFoundException(CategoryDto.class, id));
+    public CategoryRs get(@PathVariable("id") Long id) {
+        return categoryService.get(id);
     }
 
     @PostMapping
-    public CategoryDto create(@RequestBody CategoryDto newCategory) {
-        log.debug("Create playlist with data {}", newCategory);
-        newCategory.setId(idGenerator.incrementAndGet());
-        categories.add(newCategory);
-        return newCategory;
+    public CategoryRs create(@RequestBody @Valid CategoryRq dto) {
+        return categoryService.create(dto);
+    }
+
+    @PutMapping("/{id}")
+    public CategoryRs update(@PathVariable("id") Long id, @RequestBody @Valid CategoryRq dto) {
+        return categoryService.update(id, dto);
     }
 
     @DeleteMapping("/{id}")
-    public CategoryDto delete(@PathVariable("id") int id) {
-        log.debug("Delete playlist wtih id {}", id);
-        final CategoryDto playlist = get(id);
-        categories.remove(playlist);
-        return playlist;
+    public CategoryRs delete(@PathVariable("id") Long id) {
+        return categoryService.delete(id);
     }
 }
