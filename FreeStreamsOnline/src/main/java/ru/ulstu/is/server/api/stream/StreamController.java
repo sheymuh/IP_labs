@@ -15,6 +15,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import ru.ulstu.is.server.api.category.CategoryController;
+import ru.ulstu.is.server.api.playlist.PlaylistController;
 import ru.ulstu.is.server.configuration.Constants;
 
 @RestController
@@ -50,8 +52,9 @@ public class StreamController {
     }
 
     @GetMapping("/{id}")
-    public StreamDto get(@PathVariable int id) {
+    public StreamDto get(@PathVariable("id") int id) {
         log.debug("Get stream with id {}", id);
+        log.debug("Available streams IDs: {}", streams.stream().map(StreamDto::getId).toList());
         return streams.stream()
                 .filter(stream -> stream.getId() == id)
                 .findAny()
@@ -69,7 +72,7 @@ public class StreamController {
     }
 
     @PutMapping("/{id}")
-    public StreamDto edit(@PathVariable int id, @RequestBody StreamDto newStream) {
+    public StreamDto edit(@PathVariable("id") int id, @RequestBody StreamDto newStream) {
         log.debug("Edit stream wtih id {} and data {}", id, newStream);
         final StreamDto existsStream = get(id);
         existsStream.setName(newStream.getName());
@@ -83,7 +86,7 @@ public class StreamController {
     }
 
     @DeleteMapping("/{id}")
-    public StreamDto delete(@PathVariable int id) {
+    public StreamDto delete(@PathVariable("id") int id) {
         log.debug("Delete stream wtih id {}", id);
         final StreamDto stream = get(id);
         streams.remove(stream);

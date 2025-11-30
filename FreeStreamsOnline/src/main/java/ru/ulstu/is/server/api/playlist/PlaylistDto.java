@@ -1,8 +1,15 @@
 package ru.ulstu.is.server.api.playlist;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonProperty.Access;
+
 public class PlaylistDto {
-    private final int id;
-    private final String name;
+    @JsonProperty(access = Access.READ_ONLY)
+    private int id;
+    private String name;
+
+    public PlaylistDto() {
+    }
 
     public PlaylistDto(Integer id, String name) {
         this.id = id;
@@ -11,6 +18,10 @@ public class PlaylistDto {
 
     public int getId() {
         return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
     }
 
     public String getName() {
