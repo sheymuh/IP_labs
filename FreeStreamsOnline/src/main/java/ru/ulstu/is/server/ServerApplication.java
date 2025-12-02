@@ -66,11 +66,6 @@ public class ServerApplication implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
-        if (args.length == 0) {
-            return;
-        }
-        if (Objects.equals("--populate", args[0])) {
-            populateData();
-        }
+        populateData();
     }
 }

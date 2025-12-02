@@ -8,7 +8,6 @@ public class StreamRq {
     private String name;
     private String image;
     private String description;
-    private String publicationDate;
     @NotNull
     private Long categoryId;
     @NotNull
@@ -36,14 +35,6 @@ public class StreamRq {
 
     public void setDescription(String description) {
         this.description = description;
-    }
-
-    public String getPubDate() {
-        return publicationDate;
-    }
-
-    public void setPubDate(String publicationDate) {
-        this.publicationDate = publicationDate;
     }
 
     public Long getCategoryId() {
