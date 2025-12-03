@@ -1,6 +1,13 @@
 package ru.ulstu.is.server.entity;
 
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Table;
+
+@Entity
+@Table(name = "playlists")
 public class PlaylistEntity extends BaseEntity {
+    @Column(nullable = false)
     private String name;
 
     public PlaylistEntity() {

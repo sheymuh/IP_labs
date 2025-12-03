@@ -1,9 +1,8 @@
 package ru.ulstu.is.server.repository;
 
-import org.springframework.stereotype.Repository;
+import org.springframework.data.jpa.repository.JpaRepository;
 
 import ru.ulstu.is.server.entity.StreamEntity;
 
-@Repository
-public class StreamRepository extends MapRepository<StreamEntity> {
+public interface StreamRepository extends JpaRepository<StreamEntity, Long> {
 }

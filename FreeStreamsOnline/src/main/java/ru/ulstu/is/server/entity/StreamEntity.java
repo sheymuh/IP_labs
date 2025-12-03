@@ -1,23 +1,49 @@
 package ru.ulstu.is.server.entity;
 
+import java.util.HashSet;
+import java.util.Set;
+
+import jakarta.persistence.Basic;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.Lob;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.OrderBy;
+import jakarta.persistence.Table;
+
+@Entity
+@Table(name = "streams")
 public class StreamEntity extends BaseEntity {
+    @Column(nullable = false)
     private String name;
+    @Lob
+    @Basic(fetch = FetchType.LAZY)
+    @Column(columnDefinition = "text")
     private String image;
+    @Column(nullable = false)
     private String description;
+    @OneToMany(mappedBy = "stream", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OrderBy("id ASC")
+    private Set<CategoryStreamEntity> streamCategories = new HashSet<>();
+    @JoinColumn(name = "category_id", nullable = false)
+    @ManyToOne
     private PlaylistEntity playlist;
-    private CategoryEntity category;
 
     public StreamEntity() {
         super();
     }
 
-    public StreamEntity( String name, String image, String description,
-        PlaylistEntity playlist, CategoryEntity category) {
+    public StreamEntity(String name, String image, String description,
+            PlaylistEntity playlist) {
+        this();
         this.name = name;
         this.image = image;
         this.description = description;
         this.playlist = playlist;
-        this.category = category;
     }
 
     public String getName() {
@@ -44,19 +70,37 @@ public class StreamEntity extends BaseEntity {
         this.description = description;
     }
 
+    public Set<CategoryStreamEntity> getStreamCategories() {
+        return streamCategories;
+    }
+
+    public void addCategory(CategoryStreamEntity streamCategory) {
+        if (streamCategory.getStream() != this) {
+            streamCategory.setStream(this);
+        }
+        streamCategories.add(streamCategory);
+    }
+
+    public void updateCategory(CategoryStreamEntity streamCategory) {
+        if (streamCategory.getStream() != this) {
+            return;
+        }
+        streamCategories.remove(streamCategory);
+        streamCategories.add(streamCategory);
+    }
+
+    public void deleteCategory(CategoryStreamEntity streamCategory) {
+        if (streamCategory.getStream() != this) {
+            return;
+        }
+        streamCategories.remove(streamCategory);
+    }
+
     public PlaylistEntity getPlaylist() {
         return playlist;
     }
 
     public void setPlaylist(PlaylistEntity newPlaylist) {
         playlist = newPlaylist;
-    }
-
-    public CategoryEntity getCategory() {
-        return category;
-    }
-
-    public void setCategory(CategoryEntity newCategory) {
-        category = newCategory;
     }
 }

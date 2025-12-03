@@ -60,7 +60,7 @@ public class StreamService {
         entity.setName(dto.getName());
         entity.setImage(dto.getImage());
         entity.setDescription(dto.getDescription());
-        entity.setCategory(categoryService.getEntity(dto.getCategoryId()));
+        entity.setPlaylist(categoryService.getEntity(dto.getCategoryId()));
         entity.setPlaylist(playlistService.getEntity(dto.getPlaylistId()));
         entity = repository.save(entity);
         return mapper.toRsDto(entity);

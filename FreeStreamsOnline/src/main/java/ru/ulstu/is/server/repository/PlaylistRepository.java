@@ -1,9 +1,8 @@
 package ru.ulstu.is.server.repository;
 
-import org.springframework.stereotype.Repository;
+import org.springframework.data.jpa.repository.JpaRepository;
 
 import ru.ulstu.is.server.entity.PlaylistEntity;
 
-@Repository
-public class PlaylistRepository extends MapRepository<PlaylistEntity> {
+public interface PlaylistRepository extends JpaRepository<PlaylistEntity, Long> {
 }

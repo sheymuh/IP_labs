@@ -36,7 +36,7 @@ public class StreamMapper {
         dto.setName(entity.getName());
         dto.setImage(entity.getImage());
         dto.setDescription(entity.getDescription());
-        dto.setCategory(categoryMapper.toRsDto(entity.getCategory()));
+        dto.setPlaylist(categoryMapper.toRsDto(entity.getPlaylist()));
         dto.setPlaylist(playlistMapper.toRsDto(entity.getPlaylist()));
         return dto;
     }
