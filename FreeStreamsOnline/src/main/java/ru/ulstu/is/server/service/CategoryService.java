@@ -35,7 +35,7 @@ public class CategoryService {
     }
 
     public CategoryRs create(CategoryRq dto) {
-        CategoryEntity entity = new CategoryEntity(dto.getName());
+        CategoryEntity entity = new CategoryEntity(dto.getName(), dto.getAgeLimit());
         entity = repository.save(entity);
         return mapper.toRsDto(entity);
     }
@@ -43,6 +43,7 @@ public class CategoryService {
     public CategoryRs update(Long id, CategoryRq dto) {
         CategoryEntity entity = getEntity(id);
         entity.setName(dto.getName());
+        entity.setAgeLimit(dto.getAgeLimit());
         entity = repository.save(entity);
         return mapper.toRsDto(entity);
     }

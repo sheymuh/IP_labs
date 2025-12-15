@@ -11,9 +11,10 @@ import ru.ulstu.is.server.entity.CategoryEntity;
 
 @Component
 public class CategoryMapper {
-    public CategoryRq toRqDto(String name) {
+    public CategoryRq toRqDto(String name, int ageLimit) {
         final CategoryRq dto = new CategoryRq();
         dto.setName(name);
+        dto.setAgeLimit(ageLimit);
         return dto;
     }
 
@@ -21,6 +22,7 @@ public class CategoryMapper {
         final CategoryRs dto = new CategoryRs();
         dto.setId(entity.getId());
         dto.setName(entity.getName());
+        dto.setAgeLimit(entity.getAgeLimit());
         return dto;
     }
 

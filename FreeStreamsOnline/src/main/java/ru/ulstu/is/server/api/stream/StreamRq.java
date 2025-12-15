@@ -1,5 +1,7 @@
 package ru.ulstu.is.server.api.stream;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
@@ -8,6 +10,9 @@ public class StreamRq {
     private String name;
     private String image;
     private String description;
+    private int views;
+    @JsonProperty("publication_date")
+    private String publicationDate;
     @NotNull
     private Long categoryId;
     @NotNull
@@ -35,6 +40,22 @@ public class StreamRq {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public int getViews() {
+        return views;
+    }
+
+    public void setViews(int views) {
+        this.views = views;
+    }
+
+    public String getPubDate() {
+        return publicationDate;
+    }
+
+    public void setPubDate(String pubDate) {
+        this.publicationDate = pubDate;
     }
 
     public Long getCategoryId() {

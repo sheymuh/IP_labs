@@ -20,11 +20,14 @@ public class StreamMapper {
     }
 
     public StreamRq toRqDto(
-            String name, String image, String description, long categoryId, long playlistId) {
+            String name, String image, String description, int views, String pubDate, long categoryId,
+            long playlistId) {
         final StreamRq dto = new StreamRq();
         dto.setName(name);
         dto.setImage(image);
         dto.setDescription(description);
+        dto.setViews(views);
+        dto.setPubDate(pubDate);
         dto.setCategoryId(categoryId);
         dto.setPlaylistId(playlistId);
         return dto;
@@ -36,6 +39,8 @@ public class StreamMapper {
         dto.setName(entity.getName());
         dto.setImage(entity.getImage());
         dto.setDescription(entity.getDescription());
+        dto.setViews(entity.getViews());
+        dto.setPubDate(entity.getPubDate());
         dto.setCategory(categoryMapper.toRsDto(entity.getCategory()));
         dto.setPlaylist(playlistMapper.toRsDto(entity.getPlaylist()));
         return dto;

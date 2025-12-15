@@ -1,6 +1,7 @@
 package ru.ulstu.is.server;
 
-import java.util.Objects;
+import java.time.LocalDate;
+import java.util.Random;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,9 +42,9 @@ public class ServerApplication implements CommandLineRunner {
 
     private void populateData() {
         log.info("Create default categories");
-        final var category1 = categoryService.create(categoryMapper.toRqDto("jst vibing"));
-        final var category2 = categoryService.create(categoryMapper.toRqDto("letsplay"));
-        final var category3 = categoryService.create(categoryMapper.toRqDto("cooking"));
+        final var category1 = categoryService.create(categoryMapper.toRqDto("jst vibing", 16));
+        final var category2 = categoryService.create(categoryMapper.toRqDto("letsplay", 12));
+        final var category3 = categoryService.create(categoryMapper.toRqDto("cooking", 10));
 
         log.info("Create default playlists");
         final var playlist1 = playlistService.create(playlistMapper.toRqDto("Very good videos"));
@@ -51,13 +52,17 @@ public class ServerApplication implements CommandLineRunner {
         final var playlist3 = playlistService
                 .create(playlistMapper.toRqDto("How to make a nuclear bomb at home! Guide"));
 
+        Random random = new Random();
         log.info("Create default streams");
         streamService.create(streamMapper.toRqDto("new_vid", "\\STREAM.jpg",
-                "very new", category1.getId(), playlist3.getId()));
+                "very new", random.nextInt(10000000), LocalDate.now().toString(), category1.getId(),
+                playlist3.getId()));
         streamService.create(streamMapper.toRqDto("marmok", "\\mmmMARMOK.jpg",
-                "mmm MARMOK", category2.getId(), playlist1.getId()));
+                "mmm MARMOK", random.nextInt(10000000), LocalDate.now().toString(),
+                category2.getId(), playlist1.getId()));
         streamService.create(streamMapper.toRqDto("KING", "\\king.jpg",
-                "Bronny J", category3.getId(), playlist2.getId()));
+                "Bronny J", random.nextInt(10000000), LocalDate.now().toString(),
+                category3.getId(), playlist2.getId()));
     }
 
     public static void main(String[] args) {
