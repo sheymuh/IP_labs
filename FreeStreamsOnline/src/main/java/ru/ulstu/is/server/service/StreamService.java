@@ -49,6 +49,8 @@ public class StreamService {
                 dto.getName(),
                 dto.getImage(),
                 dto.getDescription(),
+                dto.getViews(),
+                dto.getPubDate(),
                 playlist,
                 category);
         entity = repository.save(entity);

@@ -3,6 +3,7 @@ package ru.ulstu.is.server.api.category;
 public class CategoryRs {
     private Long id;
     private String name;
+    private int ageLimit;
 
     public Long getId() {
         return id;
@@ -18,5 +19,13 @@ public class CategoryRs {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public int getAgeLimit() {
+        return ageLimit;
+    }
+
+    public void setAgeLimit(int ageLimit) {
+        this.ageLimit = ageLimit;
     }
 }

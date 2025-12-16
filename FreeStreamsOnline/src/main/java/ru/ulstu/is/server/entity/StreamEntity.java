@@ -26,6 +26,8 @@ public class StreamEntity extends BaseEntity {
     private String image;
     @Column(nullable = false)
     private String description;
+    private int views;
+    private String publicationDate;
     @OneToMany(mappedBy = "stream", cascade = CascadeType.ALL, orphanRemoval = true)
     @OrderBy("id ASC")
     private Set<CategoryStreamEntity> streamCategories = new HashSet<>();
@@ -37,12 +39,17 @@ public class StreamEntity extends BaseEntity {
         super();
     }
 
+    public StreamEntity(String name, String image, String description, int views, String pubDate,
+            PlaylistEntity playlist, CategoryEntity category) {
+
     public StreamEntity(String name, String image, String description,
             PlaylistEntity playlist) {
         this();
         this.name = name;
         this.image = image;
         this.description = description;
+        this.views = views;
+        this.publicationDate = pubDate;
         this.playlist = playlist;
     }
 
@@ -68,6 +75,18 @@ public class StreamEntity extends BaseEntity {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public int getViews() {
+        return views;
+    }
+
+    public void setViews(int views) {
+        this.views = views;
+    }
+
+    public String getPubDate() {
+        return publicationDate;
     }
 
     public Set<CategoryStreamEntity> getStreamCategories() {

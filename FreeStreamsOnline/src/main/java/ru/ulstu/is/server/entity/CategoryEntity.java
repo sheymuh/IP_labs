@@ -14,6 +14,7 @@ import jakarta.persistence.Table;
 public class CategoryEntity extends BaseEntity {
     @Column(length = 100, nullable = false, unique = true)
     private String name;
+    private int ageLimit;
 
     @OneToMany(mappedBy = "category")
     @OrderBy("id ASC")
@@ -23,9 +24,10 @@ public class CategoryEntity extends BaseEntity {
         super();
     }
 
-    public CategoryEntity(String name) {
+    public CategoryEntity(String name, int ageLimit) {
         this();
         this.name = name;
+        this.ageLimit = ageLimit;
     }
 
     public String getName() {
@@ -34,6 +36,14 @@ public class CategoryEntity extends BaseEntity {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public int getAgeLimit() {
+        return ageLimit;
+    }
+
+    public void setAgeLimit(int ageLimit) {
+        this.ageLimit = ageLimit;
     }
 
     public Set<CategoryStreamEntity> getCategoryStreams() {

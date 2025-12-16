@@ -8,6 +8,8 @@ public class StreamRs {
     private String name;
     private String image;
     private String description;
+    private int views;
+    private String publicationDate;
     private PlaylistRs playlist;
     private CategoryRs category;
 
@@ -41,6 +43,22 @@ public class StreamRs {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public int getViews() {
+        return views;
+    }
+
+    public void setViews(int views) {
+        this.views = views;
+    }
+
+    public String getPubDate() {
+        return publicationDate;
+    }
+
+    public void setPubDate(String pubDate) {
+        this.publicationDate = pubDate;
     }
 
     public PlaylistRs getPlaylist() {
