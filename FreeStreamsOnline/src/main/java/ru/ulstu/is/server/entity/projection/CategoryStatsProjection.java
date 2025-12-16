@@ -1,5 +1,13 @@
 package ru.ulstu.is.server.entity.projection;
 
-public class CategoryStatsProjection {
+import ru.ulstu.is.server.entity.CategoryEntity;
 
+public interface CategoryStatsProjection {
+    CategoryEntity getCategory();
+
+    Long getStreams();
+
+    Long getTotalViews();
+
+    Double getAvgViews();
 }

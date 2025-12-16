@@ -1,31 +1,19 @@
 package ru.ulstu.is.server.api.category;
 
-public class CategoryRs {
-    private Long id;
-    private String name;
-    private int ageLimit;
+import java.util.List;
+import java.util.stream.StreamSupport;
 
-    public Long getId() {
-        return id;
+import ru.ulstu.is.server.entity.CategoryEntity;
+
+public record CategoryRs(Long id, String name, int ageLimit) {
+
+    public static CategoryRs from(CategoryEntity category) {
+        return new CategoryRs(category.getId(), category.getName(), category.getAgeLimit());
     }
 
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public int getAgeLimit() {
-        return ageLimit;
-    }
-
-    public void setAgeLimit(int ageLimit) {
-        this.ageLimit = ageLimit;
+    public static List<CategoryRs> fromList(Iterable<CategoryEntity> entities) {
+        return StreamSupport.stream(entities.spliterator(), false)
+                .map(CategoryRs::from)
+                .toList();
     }
 }

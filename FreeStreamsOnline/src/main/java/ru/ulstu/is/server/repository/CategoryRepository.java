@@ -13,23 +13,25 @@ import ru.ulstu.is.server.entity.projection.CategoryStatsProjection;
 public interface CategoryRepository extends JpaRepository<CategoryEntity, Long> {
     Optional<CategoryEntity> findOneByNameIgnoreCase(String name);
 
-    @Query("select cs.category as category, " +
+    @Query("select c as category, " +
             "count(cs) as streams, " +
-            "avg(cs.grade) as avgGrade, " +
-            "min(cs.grade) as minGrade, " +
-            "max(cs.grade) as maxGrade " +
-            "from CategoryEntity c inner join c.categoryStreams cs " +
-            "group by cs.category having count(cs) > 0 " +
-            "order by cs.category.id")
-    List<CategoryStatsProjection> getAllCategorysStatistics();
+            "sum(s.views) as totalViews, " +
+            "avg(s.views) as avgViews " +
+            "from CategoryEntity c " +
+            "left join c.categoryStreams cs " +
+            "left join cs.stream s " +
+            "group by c " +
+            "order by c.id")
+    List<CategoryStatsProjection> getAllCategoriesStatistics();
 
-    @Query("select cs.category as category, " +
+    @Query("select c as category, " +
             "count(cs) as streams, " +
-            "avg(cs.grade) as avgGrade, " +
-            "min(cs.grade) as minGrade, " +
-            "max(cs.grade) as maxGrade " +
-            "from CategoryEntity c inner join c.categoryStreams cs " +
-            "where cs.category.id = :categoryId group by cs.category " +
-            "having count(cs) > 0")
+            "sum(s.views) as totalViews, " +
+            "avg(s.views) as avgViews " +
+            "from CategoryEntity c " +
+            "left join c.categoryStreams cs " +
+            "left join cs.stream s " +
+            "where c.id = :categoryId " +
+            "group by c")
     CategoryStatsProjection getCategoryStatistics(@Param("categoryId") Long categoryId);
 }

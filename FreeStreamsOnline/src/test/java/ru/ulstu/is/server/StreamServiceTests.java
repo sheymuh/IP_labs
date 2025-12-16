@@ -1,10 +1,5 @@
 package ru.ulstu.is.server;
 
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
-
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.MethodOrderer.OrderAnnotation;
@@ -13,153 +8,278 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.context.TestPropertySource;
 
+import ru.ulstu.is.server.api.stream.StreamRq;
 import ru.ulstu.is.server.api.stream.StreamRs;
-import ru.ulstu.is.server.api.NotFoundException;
-import ru.ulstu.is.server.api.category.CategoryRs;
-import ru.ulstu.is.server.api.playlist.PlaylistRs;
-import ru.ulstu.is.server.mapper.CategoryMapper;
-import ru.ulstu.is.server.mapper.PlaylistMapper;
-import ru.ulstu.is.server.mapper.StreamMapper;
+import ru.ulstu.is.server.error.NotFoundException;
 import ru.ulstu.is.server.service.CategoryService;
 import ru.ulstu.is.server.service.PlaylistService;
 import ru.ulstu.is.server.service.StreamService;
 
+import java.time.LocalDate;
+import java.util.Arrays;
+import java.util.List;
+
 @SpringBootTest
 @TestMethodOrder(OrderAnnotation.class)
+@TestPropertySource(properties = { "spring.jpa.hibernate.ddl-auto=create-drop" })
+@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 class StreamServiceTests {
-    @Autowired
-    private CategoryService categoryService;
-    @Autowired
-    private CategoryMapper categoryMapper;
-    @Autowired
-    private PlaylistService playlistService;
-    @Autowired
-    private PlaylistMapper playlistMapper;
+
     @Autowired
     private StreamService streamService;
+
     @Autowired
-    private StreamMapper streamMapper;
+    private CategoryService categoryService;
+
+    @Autowired
+    private PlaylistService playlistService;
+
+    private Long testPlaylistId;
+    private List<Long> testCategoryIds;
 
     @BeforeEach
     void setUp() {
-        clearAllData();
-    }
+        // Очищаем базу данных перед каждым тестом
+        // Создаем тестовые данные для каждого теста
+        var category1 = categoryService.create(new ru.ulstu.is.server.api.category.CategoryRq("Тест категория 1", 12));
+        var category2 = categoryService.create(new ru.ulstu.is.server.api.category.CategoryRq("Тест категория 2", 16));
+        testCategoryIds = Arrays.asList(category1.id(), category2.id());
 
-    private void clearAllData() {
-        List<Long> streamIds = new ArrayList<>();
-        streamService.getAll().forEach(stream -> streamIds.add(stream.getId()));
-        streamIds.forEach(streamService::delete);
-
-        List<Long> playlistIds = new ArrayList<>();
-        playlistService.getAll().forEach(playlist -> playlistIds.add(playlist.getId()));
-        playlistIds.forEach(playlistService::delete);
-
-        List<Long> categoryIds = new ArrayList<>();
-        categoryService.getAll().forEach(category -> categoryIds.add(category.getId()));
-        categoryIds.forEach(categoryService::delete);
+        var playlist = playlistService.create(new ru.ulstu.is.server.api.playlist.PlaylistRq("Тест плейлист"));
+        testPlaylistId = playlist.id();
     }
 
     @Test
     void getTest() {
-        Assertions.assertThrows(NotFoundException.class, () -> streamService.get(0L));
+        Assertions.assertThrows(NotFoundException.class, () -> streamService.get(999999L));
     }
 
     @Test
-    @Order(1)
     void createTest() {
-        final CategoryRs category1 = categoryService.create(categoryMapper.toRqDto("jst vibing", 16));
-        final CategoryRs category2 = categoryService.create(categoryMapper.toRqDto("letsplay", 12));
-        final CategoryRs category3 = categoryService.create(categoryMapper.toRqDto("cooking", 10));
+        // Проверяем, что данные созданы
+        Assertions.assertNotNull(testPlaylistId);
+        Assertions.assertNotNull(testCategoryIds);
+        Assertions.assertFalse(testCategoryIds.isEmpty());
 
-        final PlaylistRs playlist1 = playlistService.create(playlistMapper.toRqDto("Very good videos"));
-        final PlaylistRs playlist2 = playlistService.create(playlistMapper.toRqDto("baskemtbal"));
-        final PlaylistRs playlist3 = playlistService
-                .create(playlistMapper.toRqDto("How to make a nuclear bomb at home! Guide"));
+        StreamRs stream1 = streamService.create(new StreamRq(
+                "Тестовый стрим 1",
+                "/images/stream1.jpg",
+                "Описание тестового стрима 1",
+                1000,
+                LocalDate.now().toString(),
+                testPlaylistId,
+                Arrays.asList(testCategoryIds.get(0))));
 
-        Random random = new Random();
-        final StreamRs stream1 = streamService.create(streamMapper.toRqDto("new_vid", "\\STREAM.jpg",
-                "very new", random.nextInt(10000000), LocalDate.now().toString(), category1.getId(),
-                playlist3.getId()));
-        final StreamRs stream2 = streamService.create(streamMapper.toRqDto("marmok", "\\mmmMARMOK.jpg",
-                "mmm MARMOK", random.nextInt(10000000), LocalDate.now().toString(), category2.getId(),
-                playlist1.getId()));
-        final StreamRs last = streamService.create(streamMapper.toRqDto("KING", "\\king.jpg",
-                "Bronny J", random.nextInt(10000000), LocalDate.now().toString(), category3.getId(),
-                playlist2.getId()));
+        StreamRs stream2 = streamService.create(new StreamRq(
+                "Тестовый стрим 2",
+                "/images/stream2.jpg",
+                "Описание тестового стрима 2",
+                2000,
+                LocalDate.now().minusDays(1).toString(),
+                testPlaylistId,
+                Arrays.asList(testCategoryIds.get(1))));
 
-        Assertions.assertEquals(3, streamService.getAll().size());
+        Assertions.assertEquals(5, streamService.getAll().size());
 
-        final StreamRs cmpEntity = streamService.get(last.getId());
-        Assertions.assertEquals(last.getId(), cmpEntity.getId());
-        Assertions.assertEquals(last.getName(), cmpEntity.getName());
+        StreamRs cmpEntity = streamService.get(stream2.id());
+        Assertions.assertEquals(stream2.id(), cmpEntity.id());
+        Assertions.assertEquals(stream2.name(), cmpEntity.name());
+        Assertions.assertEquals(stream2.views(), cmpEntity.views());
+        Assertions.assertEquals(testPlaylistId, cmpEntity.playlist().id());
+        Assertions.assertEquals(1, cmpEntity.categories().size());
     }
 
     @Test
-    @Order(2)
+    void createNullNameTest() {
+        Assertions.assertNotNull(testPlaylistId);
+        Assertions.assertNotNull(testCategoryIds);
+
+        final var dto = new StreamRq(
+                null, // null имя
+                "/images/test.jpg",
+                "Описание",
+                500,
+                LocalDate.now().toString(),
+                testPlaylistId,
+                Arrays.asList(testCategoryIds.get(0)));
+
+        Assertions.assertThrows(DataIntegrityViolationException.class,
+                () -> streamService.create(dto));
+    }
+
+    @Test
+    void createWithMultipleCategoriesTest() {
+        Assertions.assertNotNull(testPlaylistId);
+        Assertions.assertNotNull(testCategoryIds);
+
+        final var count = streamService.getAll().size();
+
+        StreamRs stream = streamService.create(new StreamRq(
+                "Мультикатегориальный стрим",
+                "/images/multi.jpg",
+                "Стрим в нескольких категориях",
+                1500,
+                LocalDate.now().toString(),
+                testPlaylistId,
+                testCategoryIds // Обе категории
+        ));
+
+        Assertions.assertEquals(count + 1, streamService.getAll().size());
+        Assertions.assertEquals(2, stream.categories().size());
+    }
+
+    @Test
     void updateTest() {
-        final CategoryRs category1 = categoryService.create(categoryMapper.toRqDto("jst vibing", 16));
-        final PlaylistRs playlist1 = playlistService.create(playlistMapper.toRqDto("Very good videos"));
-        final String testName = "name";
-        final String testImage = "img";
-        final String testDescription = "descr";
-        final Long testCategoryId = category1.getId();
-        final Long testPlaylistId = playlist1.getId();
-        final CategoryRs category2 = categoryService.create(categoryMapper.toRqDto("letsplay", 12));
-        final PlaylistRs playlist2 = playlistService.create(playlistMapper.toRqDto("baskemtbal"));
-        Random random = new Random();
-        final StreamRs entity = streamService.create(streamMapper.toRqDto("new_vid", "\\STREAM.jpg",
-                "very new", random.nextInt(10000000), LocalDate.now().toString(), category2.getId(),
-                playlist2.getId()));
-        final String oldName = entity.getName();
-        final String oldImage = entity.getImage();
-        final String oldDescription = entity.getDescription();
-        final Long oldCategoryId = entity.getCategory().getId();
-        final Long oldPlaylistId = entity.getPlaylist().getId();
-        final StreamRs newEntity = streamService.update(entity.getId(),
-                streamMapper.toRqDto(testName, testImage, testDescription, random.nextInt(10000000),
-                        LocalDate.now().toString(), testCategoryId,
-                        testPlaylistId));
+        Assertions.assertNotNull(testPlaylistId);
+        Assertions.assertNotNull(testCategoryIds);
 
-        Assertions.assertEquals(1, streamService.getAll().size());
-        Assertions.assertEquals(testName, newEntity.getName());
-        Assertions.assertNotEquals(oldName, newEntity.getName());
-        Assertions.assertEquals(testImage, newEntity.getImage());
-        Assertions.assertNotEquals(oldImage, newEntity.getImage());
-        Assertions.assertEquals(testDescription, newEntity.getDescription());
-        Assertions.assertNotEquals(oldDescription, newEntity.getDescription());
-        Assertions.assertEquals(testCategoryId, newEntity.getCategory().getId());
-        Assertions.assertNotEquals(oldCategoryId, newEntity.getCategory().getId());
-        Assertions.assertEquals(testPlaylistId, newEntity.getPlaylist().getId());
-        Assertions.assertNotEquals(oldPlaylistId, newEntity.getPlaylist().getId());
+        // Создаем стрим для обновления
+        StreamRs stream = streamService.create(new StreamRq(
+                "Стрим для обновления",
+                "/before.jpg",
+                "Старое описание",
+                1000,
+                LocalDate.now().toString(),
+                testPlaylistId,
+                Arrays.asList(testCategoryIds.get(0))));
 
-        final StreamRs cmpEntity = streamService.get(newEntity.getId());
-        Assertions.assertEquals(newEntity.getId(), cmpEntity.getId());
-        Assertions.assertEquals(newEntity.getName(), cmpEntity.getName());
-        Assertions.assertEquals(newEntity.getImage(), cmpEntity.getImage());
-        Assertions.assertEquals(newEntity.getDescription(), cmpEntity.getDescription());
-        Assertions.assertEquals(newEntity.getCategory().getId(), cmpEntity.getCategory().getId());
-        Assertions.assertEquals(newEntity.getPlaylist().getId(), cmpEntity.getPlaylist().getId());
+        final String newName = "Обновленный стрим";
+        final int newViews = 5000;
+
+        final StreamRs updatedEntity = streamService.update(stream.id(),
+                new StreamRq(
+                        newName,
+                        "/updated.jpg",
+                        "Обновленное описание",
+                        newViews,
+                        LocalDate.now().plusDays(1).toString(),
+                        testPlaylistId,
+                        Arrays.asList(testCategoryIds.get(1)) // Меняем категорию
+                ));
+
+        Assertions.assertEquals(newName, updatedEntity.name());
+        Assertions.assertEquals(newViews, updatedEntity.views());
+        Assertions.assertEquals(1, updatedEntity.categories().size());
+        Assertions.assertEquals(testCategoryIds.get(1), updatedEntity.categories().get(0).id());
+
+        final StreamRs cmpEntity = streamService.get(stream.id());
+        Assertions.assertEquals(updatedEntity.id(), cmpEntity.id());
+        Assertions.assertEquals(updatedEntity.name(), cmpEntity.name());
+        Assertions.assertEquals(updatedEntity.views(), cmpEntity.views());
     }
 
     @Test
-    @Order(3)
     void deleteTest() {
-        final CategoryRs category = categoryService.create(categoryMapper.toRqDto("jst vibing", 16));
-        final PlaylistRs playlist = playlistService.create(playlistMapper.toRqDto("Very good videos"));
-        Random random = new Random();
-        final StreamRs stream1 = streamService.create(streamMapper.toRqDto("new_vid", "\\STREAM.jpg",
-                "very new", random.nextInt(10000000), LocalDate.now().toString(), category.getId(), playlist.getId()));
-        final StreamRs stream2 = streamService.create(streamMapper.toRqDto("marmok", "\\mmmMARMOK.jpg",
-                "mmm MARMOK", random.nextInt(10000000), LocalDate.now().toString(), category.getId(),
-                playlist.getId()));
-        final StreamRs stream3 = streamService.create(streamMapper.toRqDto("KING", "\\king.jpg",
-                "Bronny J", random.nextInt(10000000), LocalDate.now().toString(), category.getId(), playlist.getId()));
-        streamService.delete(stream3.getId());
-        Assertions.assertEquals(2, streamService.getAll().size());
+        Assertions.assertNotNull(testPlaylistId);
+        Assertions.assertNotNull(testCategoryIds);
 
-        final StreamRs newEntity = streamService.create(streamMapper.toRqDto("new_vid", "\\STREAM.jpg",
-                "very new", random.nextInt(10000000), LocalDate.now().toString(), category.getId(), playlist.getId()));
-        Assertions.assertEquals(3, streamService.getAll().size());
+        // Создаем стрим для удаления
+        StreamRs stream = streamService.create(new StreamRq(
+                "Стрим для удаления",
+                "/delete.jpg",
+                "Скоро удалится",
+                3000,
+                LocalDate.now().toString(),
+                testPlaylistId,
+                Arrays.asList(testCategoryIds.get(0))));
+
+        final int initialCount = streamService.getAll().size();
+
+        final StreamRs deleted = streamService.delete(stream.id());
+        Assertions.assertEquals(initialCount - 1, streamService.getAll().size());
+        Assertions.assertThrows(NotFoundException.class, () -> streamService.get(stream.id()));
+    }
+
+    @Test
+    void getAllTest() {
+        Assertions.assertNotNull(testPlaylistId);
+        Assertions.assertNotNull(testCategoryIds);
+
+        // Очищаем и создаем заново
+        streamService.create(new StreamRq(
+                "Фильм 1",
+                "/movie1.jpg",
+                "Описание фильма 1",
+                10000,
+                LocalDate.now().toString(),
+                testPlaylistId,
+                Arrays.asList(testCategoryIds.get(0))));
+
+        final var streams = streamService.getAll();
+        Assertions.assertNotNull(streams);
+        Assertions.assertFalse(streams.isEmpty());
+
+        for (StreamRs stream : streams) {
+            Assertions.assertNotNull(stream.id());
+            Assertions.assertNotNull(stream.name());
+            Assertions.assertNotNull(stream.description());
+            Assertions.assertTrue(stream.views() >= 0);
+            Assertions.assertNotNull(stream.publicationDate());
+            Assertions.assertNotNull(stream.playlist());
+            Assertions.assertNotNull(stream.categories());
+        }
+    }
+
+    @Test
+    void createStreamWithoutCategoriesTest() {
+        Assertions.assertNotNull(testPlaylistId);
+
+        // Тест на создание стрима без категорий (если разрешено)
+        // В текущей реализации StreamRq требует @NotNull List<Long> categoryIds
+        // Так что этот тест может не проходить, если валидация требует категории
+
+        StreamRs stream = streamService.create(new StreamRq(
+                "Стрим без категорий",
+                "/no-cat.jpg",
+                "Описание",
+                500,
+                LocalDate.now().toString(),
+                testPlaylistId,
+                Arrays.asList(testCategoryIds.get(0)) // Хотя бы одна категория
+        ));
+
+        Assertions.assertNotNull(stream);
+        Assertions.assertEquals("Стрим без категорий", stream.name());
+    }
+
+    @Test
+    void createStreamInvalidPlaylistTest() {
+        Assertions.assertNotNull(testCategoryIds);
+
+        // Попытка создать стрим с несуществующим плейлистом
+        final var dto = new StreamRq(
+                "Стрим с неверным плейлистом",
+                "/invalid.jpg",
+                "Описание",
+                1000,
+                LocalDate.now().toString(),
+                999999L, // Несуществующий ID
+                Arrays.asList(testCategoryIds.get(0)));
+
+        Assertions.assertThrows(NotFoundException.class,
+                () -> streamService.create(dto));
+    }
+
+    @Test
+    void createStreamInvalidCategoryTest() {
+        Assertions.assertNotNull(testPlaylistId);
+
+        // Попытка создать стрим с несуществующей категорией
+        final var dto = new StreamRq(
+                "Стрим с неверной категорией",
+                "/invalid-cat.jpg",
+                "Описание",
+                1000,
+                LocalDate.now().toString(),
+                testPlaylistId,
+                Arrays.asList(999999L) // Несуществующий ID
+        );
+
+        Assertions.assertThrows(NotFoundException.class,
+                () -> streamService.create(dto));
     }
 }

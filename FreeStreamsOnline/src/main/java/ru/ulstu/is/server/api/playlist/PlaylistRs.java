@@ -1,22 +1,19 @@
 package ru.ulstu.is.server.api.playlist;
 
-public class PlaylistRs {
-    private Long id;
-    private String name;
+import java.util.List;
+import java.util.stream.StreamSupport;
 
-    public Long getId() {
-        return id;
+import ru.ulstu.is.server.entity.PlaylistEntity;
+
+public record PlaylistRs(Long id, String name) {
+
+    public static PlaylistRs from(PlaylistEntity entity) {
+        return new PlaylistRs(entity.getId(), entity.getName());
     }
 
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
+    public static List<PlaylistRs> fromList(Iterable<PlaylistEntity> entities) {
+        return StreamSupport.stream(entities.spliterator(), false)
+                .map(PlaylistRs::from)
+                .toList();
     }
 }

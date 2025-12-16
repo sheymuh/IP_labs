@@ -50,10 +50,11 @@ public class CategoryEntity extends BaseEntity {
         return categoryStreams;
     }
 
-    public void addStream(CategoryStreamEntity categoryStream) {
-        if (categoryStream.getCategory() != this) {
-            categoryStream.setCategory(this);
+    public Set<StreamEntity> getStreams() {
+        Set<StreamEntity> streams = new HashSet<>();
+        for (CategoryStreamEntity cs : categoryStreams) {
+            streams.add(cs.getStream());
         }
-        categoryStreams.add(categoryStream);
+        return streams;
     }
 }

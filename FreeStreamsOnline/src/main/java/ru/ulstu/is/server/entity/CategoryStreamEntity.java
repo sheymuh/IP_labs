@@ -15,25 +15,23 @@ import jakarta.persistence.Table;
 public class CategoryStreamEntity {
     @EmbeddedId
     private CategoryStreamId id = new CategoryStreamId();
+
     @ManyToOne
     @MapsId("categoryId")
     @JoinColumn(name = "category_id", nullable = false)
     private CategoryEntity category;
+
     @ManyToOne
     @MapsId("streamId")
     @JoinColumn(name = "stream_id", nullable = false)
     private StreamEntity stream;
-    private Integer grade;
-    private LocalDate date;
 
     public CategoryStreamEntity() {
     }
 
-    public CategoryStreamEntity(CategoryEntity category, StreamEntity stream, Integer grade, LocalDate date) {
+    public CategoryStreamEntity(CategoryEntity category, StreamEntity stream) {
         this.category = category;
         this.stream = stream;
-        this.grade = grade;
-        this.date = date;
         this.id = new CategoryStreamId(category.getId(), stream.getId());
     }
 
@@ -59,22 +57,6 @@ public class CategoryStreamEntity {
 
     public void setStream(StreamEntity stream) {
         this.stream = stream;
-    }
-
-    public Integer getGrade() {
-        return grade;
-    }
-
-    public void setGrade(Integer grade) {
-        this.grade = grade;
-    }
-
-    public LocalDate getDate() {
-        return date;
-    }
-
-    public void setDate(LocalDate date) {
-        this.date = date;
     }
 
     @Override

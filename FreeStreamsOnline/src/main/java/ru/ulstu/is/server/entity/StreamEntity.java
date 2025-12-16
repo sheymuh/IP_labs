@@ -1,5 +1,6 @@
 package ru.ulstu.is.server.entity;
 
+import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -20,29 +21,32 @@ import jakarta.persistence.Table;
 public class StreamEntity extends BaseEntity {
     @Column(nullable = false)
     private String name;
+
     @Lob
     @Basic(fetch = FetchType.LAZY)
     @Column(columnDefinition = "text")
     private String image;
+
     @Column(nullable = false)
     private String description;
+
     private int views;
-    private String publicationDate;
+
+    private LocalDate publicationDate;
+
+    @JoinColumn(name = "playlist_id", nullable = false)
+    @ManyToOne
+    private PlaylistEntity playlist;
+
     @OneToMany(mappedBy = "stream", cascade = CascadeType.ALL, orphanRemoval = true)
     @OrderBy("id ASC")
     private Set<CategoryStreamEntity> streamCategories = new HashSet<>();
-    @JoinColumn(name = "category_id", nullable = false)
-    @ManyToOne
-    private PlaylistEntity playlist;
 
     public StreamEntity() {
         super();
     }
 
-    public StreamEntity(String name, String image, String description, int views, String pubDate,
-            PlaylistEntity playlist, CategoryEntity category) {
-
-    public StreamEntity(String name, String image, String description,
+    public StreamEntity(String name, String image, String description, int views, LocalDate pubDate,
             PlaylistEntity playlist) {
         this();
         this.name = name;
@@ -85,34 +89,12 @@ public class StreamEntity extends BaseEntity {
         this.views = views;
     }
 
-    public String getPubDate() {
+    public LocalDate getPubDate() {
         return publicationDate;
     }
 
-    public Set<CategoryStreamEntity> getStreamCategories() {
-        return streamCategories;
-    }
-
-    public void addCategory(CategoryStreamEntity streamCategory) {
-        if (streamCategory.getStream() != this) {
-            streamCategory.setStream(this);
-        }
-        streamCategories.add(streamCategory);
-    }
-
-    public void updateCategory(CategoryStreamEntity streamCategory) {
-        if (streamCategory.getStream() != this) {
-            return;
-        }
-        streamCategories.remove(streamCategory);
-        streamCategories.add(streamCategory);
-    }
-
-    public void deleteCategory(CategoryStreamEntity streamCategory) {
-        if (streamCategory.getStream() != this) {
-            return;
-        }
-        streamCategories.remove(streamCategory);
+    public void setPubDate(LocalDate pubDate) {
+        this.publicationDate = pubDate;
     }
 
     public PlaylistEntity getPlaylist() {
@@ -121,5 +103,37 @@ public class StreamEntity extends BaseEntity {
 
     public void setPlaylist(PlaylistEntity newPlaylist) {
         playlist = newPlaylist;
+    }
+
+    public Set<CategoryStreamEntity> getStreamCategories() {
+        return streamCategories;
+    }
+
+    public void addCategory(CategoryEntity category) {
+        CategoryStreamEntity categoryStream = new CategoryStreamEntity(category, this);
+        streamCategories.add(categoryStream);
+        category.getCategoryStreams().add(categoryStream);
+    }
+
+    public void removeCategory(CategoryEntity category) {
+        CategoryStreamEntity categoryStream = streamCategories.stream()
+                .filter(cs -> cs.getCategory().equals(category))
+                .findFirst()
+                .orElse(null);
+
+        if (categoryStream != null) {
+            streamCategories.remove(categoryStream);
+            category.getCategoryStreams().remove(categoryStream);
+            categoryStream.setCategory(null);
+            categoryStream.setStream(null);
+        }
+    }
+
+    public Set<CategoryEntity> getCategories() {
+        Set<CategoryEntity> categories = new HashSet<>();
+        for (CategoryStreamEntity cs : streamCategories) {
+            categories.add(cs.getCategory());
+        }
+        return categories;
     }
 }

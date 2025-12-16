@@ -1,76 +1,102 @@
 package ru.ulstu.is.server.service;
 
+import java.time.LocalDate;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 import ru.ulstu.is.server.api.stream.StreamRq;
 import ru.ulstu.is.server.api.stream.StreamRs;
 import ru.ulstu.is.server.entity.CategoryEntity;
 import ru.ulstu.is.server.entity.PlaylistEntity;
 import ru.ulstu.is.server.entity.StreamEntity;
-import ru.ulstu.is.server.api.NotFoundException;
-import ru.ulstu.is.server.mapper.StreamMapper;
+import ru.ulstu.is.server.error.NotFoundException;
 import ru.ulstu.is.server.repository.StreamRepository;
 
 @Service
 public class StreamService {
     private final StreamRepository repository;
-    private final CategoryService categoryService;
     private final PlaylistService playlistService;
-    private final StreamMapper mapper;
+    private final CategoryService categoryService;
 
-    public StreamService(StreamRepository repository, CategoryService categoryService, PlaylistService playlistService,
-            StreamMapper mapper) {
+    public StreamService(
+            StreamRepository repository,
+            PlaylistService playlistService,
+            CategoryService categoryService) {
         this.repository = repository;
-        this.categoryService = categoryService;
         this.playlistService = playlistService;
-        this.mapper = mapper;
+        this.categoryService = categoryService;
     }
 
+    @Transactional(propagation = Propagation.MANDATORY)
     public StreamEntity getEntity(Long id) {
         return repository.findById(id)
                 .orElseThrow(() -> new NotFoundException(StreamEntity.class, id));
     }
 
+    @Transactional(readOnly = true)
     public List<StreamRs> getAll() {
-        return mapper.toRsListDto(repository.findAll());
+        return StreamRs.fromList(repository.findAll());
     }
 
+    @Transactional(readOnly = true)
     public StreamRs get(Long id) {
         final StreamEntity entity = getEntity(id);
-        return mapper.toRsDto(entity);
+        return StreamRs.from(entity);
     }
 
+    @Transactional
     public StreamRs create(StreamRq dto) {
-        final CategoryEntity category = categoryService.getEntity(dto.getCategoryId());
-        final PlaylistEntity playlist = playlistService.getEntity(dto.getPlaylistId());
+        final PlaylistEntity playlist = playlistService.getEntity(dto.playlistId());
+
         StreamEntity entity = new StreamEntity(
-                dto.getName(),
-                dto.getImage(),
-                dto.getDescription(),
-                dto.getViews(),
-                dto.getPubDate(),
-                playlist,
-                category);
+                dto.name(),
+                dto.image(),
+                dto.description(),
+                dto.views(),
+                LocalDate.parse(dto.publicationDate()),
+                playlist);
+
+        // Добавляем категории
+        for (Long categoryId : dto.categoryIds()) {
+            CategoryEntity category = categoryService.getEntity(categoryId);
+            entity.addCategory(category);
+        }
+
         entity = repository.save(entity);
-        return mapper.toRsDto(entity);
+        return StreamRs.from(entity);
     }
 
+    @Transactional
     public StreamRs update(Long id, StreamRq dto) {
         StreamEntity entity = getEntity(id);
-        entity.setName(dto.getName());
-        entity.setImage(dto.getImage());
-        entity.setDescription(dto.getDescription());
-        entity.setPlaylist(categoryService.getEntity(dto.getCategoryId()));
-        entity.setPlaylist(playlistService.getEntity(dto.getPlaylistId()));
+        entity.setName(dto.name());
+        entity.setImage(dto.image());
+        entity.setDescription(dto.description());
+        entity.setViews(dto.views());
+        entity.setPubDate(LocalDate.parse(dto.publicationDate()));
+        entity.setPlaylist(playlistService.getEntity(dto.playlistId()));
+
+        // Обновляем категории
+        // 1. Удаляем старые связи
+        entity.getCategories().forEach(entity::removeCategory);
+
+        // 2. Добавляем новые
+        for (Long categoryId : dto.categoryIds()) {
+            CategoryEntity category = categoryService.getEntity(categoryId);
+            entity.addCategory(category);
+        }
+
         entity = repository.save(entity);
-        return mapper.toRsDto(entity);
+        return StreamRs.from(entity);
     }
 
+    @Transactional
     public StreamRs delete(Long id) {
         final StreamEntity entity = getEntity(id);
         repository.delete(entity);
-        return mapper.toRsDto(entity);
+        return StreamRs.from(entity);
     }
 }

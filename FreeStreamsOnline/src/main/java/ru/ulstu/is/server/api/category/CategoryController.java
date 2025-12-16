@@ -50,4 +50,14 @@ public class CategoryController {
     public CategoryRs delete(@PathVariable("id") Long id) {
         return categoryService.delete(id);
     }
+
+    @GetMapping("/stats")
+    public List<CategoryStatsRs> getAllStats() {
+        return categoryService.getAllCategoriesStats();
+    }
+
+    @GetMapping("/{id}/stats")
+    public CategoryStatsRs getStats(@PathVariable("id") Long id) {
+        return categoryService.getCategoryStats(id);
+    }
 }
