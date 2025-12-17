@@ -2,6 +2,8 @@ plugins {
     id "java"
     id "org.springframework.boot" version "3.5.6"
     id "io.spring.dependency-management" version "1.1.7"
+    id "com.github.node-gradle.node" version "7.1.0" apply false
+    id "org.liquibase.gradle" version "2.2.2" apply false
 }
 
 group = "ru.ulstu.is"
@@ -33,11 +35,32 @@ repositories {
 ext {
     springdocVersion = "2.8.11"
     h2Version = "2.4.240"
+    postgresVersion = "42.7.8"
+    liquibaseVersion = "4.33.0"
     mockitoVersion = "5.19.0"
+
+    springProfiles = []
+    if (project.hasProperty("front")) {
+        springProfiles.add("front")
+    }
+    if (project.hasProperty("prod")) {
+        springProfiles.add("prod")
+    } else {
+        springProfiles.add("dev")
+    }
+    currentProfiles = springProfiles.join(",")
+    logger.quiet("Current profiles are: " + currentProfiles)
 }
 
 configurations {
      mockitoAgent
+}
+
+if (springProfiles.contains("front")) {
+    apply from: "build.front.gradle"
+}
+if (springProfiles.contains("dev")) {
+    apply from: "build.migrations.gradle"
 }
 
 dependencies {
@@ -46,7 +69,14 @@ dependencies {
     implementation "org.springdoc:springdoc-openapi-starter-webmvc-ui:${springdocVersion}"
 
     implementation "org.springframework.boot:spring-boot-starter-data-jpa"
-	implementation "com.h2database:h2:${h2Version}"
+    runtimeOnly "org.liquibase:liquibase-core:${liquibaseVersion}"
+	
+    if (springProfiles.contains("prod")) {
+        runtimeOnly "org.postgresql:postgresql:${postgresVersion}"
+    } else {
+        runtimeOnly "org.postgresql:postgresql:${postgresVersion}"
+        runtimeOnly "com.h2database:h2:${h2Version}"
+    }
 
     testImplementation "org.springframework.boot:spring-boot-starter-test"
     testRuntimeOnly "org.junit.platform:junit-platform-launcher"
@@ -57,8 +87,26 @@ dependencies {
     }
 }
 
-tasks.named("test") {
+bootRun {
+    def currentArgs = ["--spring.profiles.active=" + currentProfiles]
+    if (project.hasProperty("args")) {
+        currentArgs.addAll(project.args.tokenize())
+    }
+    args currentArgs
+}
+
+test {
     useJUnitPlatform()
     jvmArgs += "-Xshare:off"
     jvmArgs += "-javaagent:${configurations.mockitoAgent.asPath}"
+    systemProperty "spring.profiles.active", currentProfiles
 }
+
+processResources {
+    filesMatching("**/application.yml") {
+        filter { line ->
+            line.replace("active: dev", "active: ${currentProfiles}")
+        }
+    }
+}
+
