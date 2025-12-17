@@ -9,9 +9,13 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Min;
+import ru.ulstu.is.server.api.PageHelper;
+import ru.ulstu.is.server.api.PageRs;
 import ru.ulstu.is.server.configuration.Constants;
 import ru.ulstu.is.server.service.StreamService;
 
@@ -26,8 +30,10 @@ public class StreamController {
     }
 
     @GetMapping
-    public List<StreamRs> getAll() {
-        return streamService.getAll();
+    public PageRs<StreamRs> getAll(
+            @RequestParam(defaultValue = "1") @Min(1) int page,
+            @RequestParam(defaultValue = "10") @Min(1) int size) {
+        return streamService.getAll(PageHelper.toPageable(page, size));
     }
 
     @GetMapping("/{id}")

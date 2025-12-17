@@ -1,0 +1,17 @@
+spring:
+    main:
+        banner-mode: off
+    application:
+        name: server
+    profiles:
+        active: dev
+    jpa:
+        hibernate:
+            ddl-auto: validate
+        open-in-view: false
+    liquibase:
+        enabled: true
+        drop-first: false
+        change-log: classpath:db/master.yml
+server:
+    port: 8080

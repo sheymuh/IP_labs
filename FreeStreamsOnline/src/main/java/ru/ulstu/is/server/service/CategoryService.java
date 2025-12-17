@@ -1,10 +1,13 @@
 package ru.ulstu.is.server.service;
 
 import java.util.List;
+
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
+import ru.ulstu.is.server.api.PageRs;
 import ru.ulstu.is.server.api.category.CategoryRq;
 import ru.ulstu.is.server.api.category.CategoryRs;
 import ru.ulstu.is.server.api.category.CategoryStatsRs;
@@ -36,6 +39,11 @@ public class CategoryService {
     @Transactional(readOnly = true)
     public List<CategoryRs> getAll() {
         return CategoryRs.fromList(repository.findAll());
+    }
+
+    @Transactional(readOnly = true)
+    public PageRs<CategoryRs> getAll(Pageable pageable) {
+        return PageRs.from(repository.findAll(pageable), CategoryRs::from);
     }
 
     @Transactional(readOnly = true)

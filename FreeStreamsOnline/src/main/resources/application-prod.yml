@@ -1,0 +1,15 @@
+# Available levels: TRACE, DEBUG, INFO, WARN, ERROR, FATAL, OFF
+logging:
+    level:
+        ru:
+            ulstu:
+                is:
+                    server: INFO
+spring:
+    datasource:
+        url: jdbc:postgresql://127.0.0.1/is-demo
+        username: postgres
+        password: postgres
+        driver-class-name: org.postgresql.Driver
+    jpa:
+        show-sql: false

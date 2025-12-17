@@ -3,10 +3,12 @@ package ru.ulstu.is.server.service;
 import java.time.LocalDate;
 import java.util.List;
 
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
+import ru.ulstu.is.server.api.PageRs;
 import ru.ulstu.is.server.api.stream.StreamRq;
 import ru.ulstu.is.server.api.stream.StreamRs;
 import ru.ulstu.is.server.entity.CategoryEntity;
@@ -39,6 +41,11 @@ public class StreamService {
     @Transactional(readOnly = true)
     public List<StreamRs> getAll() {
         return StreamRs.fromList(repository.findAll());
+    }
+
+    @Transactional(readOnly = true)
+    public PageRs<StreamRs> getAll(Pageable pageable) {
+        return PageRs.from(repository.findAll(pageable), StreamRs::from);
     }
 
     @Transactional(readOnly = true)

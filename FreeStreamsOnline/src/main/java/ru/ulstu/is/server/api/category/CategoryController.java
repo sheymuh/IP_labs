@@ -9,9 +9,13 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Min;
+import ru.ulstu.is.server.api.PageHelper;
+import ru.ulstu.is.server.api.PageRs;
 import ru.ulstu.is.server.configuration.Constants;
 import ru.ulstu.is.server.service.CategoryService;
 
@@ -27,8 +31,10 @@ public class CategoryController {
     }
 
     @GetMapping
-    public List<CategoryRs> getAll() {
-        return categoryService.getAll();
+    public PageRs<CategoryRs> getAll(
+            @RequestParam(defaultValue = "1") @Min(1) int page,
+            @RequestParam(defaultValue = "10") @Min(1) int size) {
+        return categoryService.getAll(PageHelper.toPageable(page, size));
     }
 
     @GetMapping("/{id}")

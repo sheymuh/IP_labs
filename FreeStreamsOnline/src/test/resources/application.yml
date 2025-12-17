@@ -1,0 +1,14 @@
+logging:
+    level:
+        ru:
+            ulstu:
+                is:
+                    server: DEBUG
+spring:
+    profiles:
+        active: prod
+    jpa:
+        hibernate:
+            ddl-auto: create-drop
+    liquibase:
+        enabled: false
