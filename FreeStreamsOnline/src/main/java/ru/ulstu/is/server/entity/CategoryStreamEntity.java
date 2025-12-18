@@ -1,6 +1,5 @@
 package ru.ulstu.is.server.entity;
 
-import java.time.LocalDate;
 import java.util.Objects;
 
 import jakarta.persistence.EmbeddedId;

@@ -7,56 +7,105 @@ export function useStreams() {
     const [streams, setStreams] = useState([]);
     const [categories, setCategories] = useState([]);
     const [playlists, setPlaylists] = useState([]);
+    const [pages, setPages] = useState({
+        current: 1,
+        total: 1,
+        size: 6,
+        totalItems: 0,
+        hasNext: false,
+        hasPrevious: false,
+    });
 
     const [filters, setFilters] = useState({
         categoryId: "",
         playlistId: "",
     });
+
+    const [sorting, setSorting] = useState({
+        sortBy: null,
+        sortDirection: "asc",
+    });
+
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        load();
-    }, []);
+        load(pages.current);
+    }, [pages.current, filters.categoryId, filters.playlistId, sorting.sortBy, sorting.sortDirection]);
 
-    async function load() {
+    async function load(page = 1) {
         try {
             setLoading(true);
+
             const [streamsData, categoriesData, playlistsData] = await Promise.all([
-                API.fetchStreams(),
+                API.fetchStreams(
+                    page,
+                    pages.size,
+                    filters.categoryId || null,
+                    filters.playlistId || null,
+                    sorting.sortBy,
+                    sorting.sortDirection
+                ),
                 CategoryAPI.fetchCategories(),
                 PlaylistAPI.fetchPlaylists(),
             ]);
 
-            console.log("Streams data:", streamsData);
-            console.log("Categories data:", categoriesData);
-            console.log("Playlists data:", playlistsData);
+            console.log("Sorted streams data:", streamsData);
 
-            // ИЗМЕНЕНИЕ: Извлекаем items из Page объекта
-            const streamsItems = streamsData.items || streamsData.content || streamsData;
-            const categoriesItems = categoriesData.items || categoriesData.content || categoriesData;
-            const playlistsItems = playlistsData.items || playlistsData.content || playlistsData;
+            const streamsItems = streamsData.items || [];
+
+            setPages((prev) => ({
+                ...prev,
+                current: streamsData.currentPage || page,
+                total: streamsData.totalPages || 1,
+                size: streamsData.currentSize || pages.size,
+                totalItems: streamsData.totalItems || streamsItems.length,
+                hasNext: streamsData.hasNext || false,
+                hasPrevious: streamsData.hasPrevious || false,
+            }));
 
             const extended = streamsItems.map((stream) => ({
                 ...stream,
                 id: String(stream.id),
                 playlistId: stream.playlist ? String(stream.playlist.id) : "",
-                categoryId: stream.category ? String(stream.category.id) : "",
-                // Если категории приходят как массив в stream.categories
                 categories: stream.categories || [],
-                category: stream.category,
+                category: stream.categories && stream.categories.length > 0 ? stream.categories[0] : null,
+                categoryId: stream.categories && stream.categories.length > 0 ? String(stream.categories[0].id) : "",
                 playlist: stream.playlist,
             }));
 
             setStreams(extended);
+
+            const categoriesItems = categoriesData.items || categoriesData.content || categoriesData;
+            const playlistsItems = playlistsData.items || playlistsData.content || playlistsData;
+
             setCategories(Array.isArray(categoriesItems) ? categoriesItems : []);
             setPlaylists(Array.isArray(playlistsItems) ? playlistsItems : []);
         } catch (error) {
             console.error("Error loading data:", error);
             setCategories([]);
             setPlaylists([]);
+            setStreams([]);
         } finally {
             setLoading(false);
         }
+    }
+
+    function sortAsc() {
+        setSorting({
+            sortBy: "name",
+            sortDirection: "asc",
+        });
+        // Сбрасываем на первую страницу при сортировке
+        setPages((prev) => ({ ...prev, current: 1 }));
+    }
+
+    function sortDesc() {
+        setSorting({
+            sortBy: "name",
+            sortDirection: "desc",
+        });
+        // Сбрасываем на первую страницу при сортировке
+        setPages((prev) => ({ ...prev, current: 1 }));
     }
 
     function applyFilters(categoryId = "", playlistId = "") {
@@ -64,6 +113,17 @@ export function useStreams() {
             categoryId: String(categoryId),
             playlistId: String(playlistId),
         });
+        // Сбрасываем сортировку при изменении фильтров (опционально)
+        setSorting({
+            sortBy: null,
+            sortDirection: "asc",
+        });
+        setPages((prev) => ({
+            ...prev,
+            current: 1,
+            total: 1,
+            totalItems: 0,
+        }));
     }
 
     function resetFilters() {
@@ -71,28 +131,37 @@ export function useStreams() {
             categoryId: "",
             playlistId: "",
         });
+        // Сбрасываем сортировку (опционально)
+        setSorting({
+            sortBy: null,
+            sortDirection: "asc",
+        });
+        setPages((prev) => ({
+            ...prev,
+            current: 1,
+            total: 1,
+            totalItems: 0,
+        }));
+    }
+
+    function changePage(page) {
+        if (page >= 1 && page <= pages.total) {
+            setPages((prev) => ({ ...prev, current: page }));
+        }
     }
 
     const filteredStreams = streams.filter((stream) => {
+        // Проверяем по списку категорий
         const matchesCategory =
             !filters.categoryId ||
-            (stream.categories && stream.categories.some((cat) => String(cat.id) === filters.categoryId)) ||
-            String(stream.categoryId) === filters.categoryId;
+            (stream.categories && stream.categories.some((cat) => String(cat.id) === filters.categoryId));
 
-        const matchesPlaylist = !filters.playlistId || String(stream.playlistId) === filters.playlistId;
+        // Проверяем по плейлисту
+        const matchesPlaylist =
+            !filters.playlistId || (stream.playlist && String(stream.playlist.id) === filters.playlistId);
 
         return matchesCategory && matchesPlaylist;
     });
-
-    function sortAsc() {
-        const sorted = [...streams].sort((a, b) => a.name.localeCompare(b.name));
-        setStreams(sorted);
-    }
-
-    function sortDesc() {
-        const sorted = [...streams].sort((a, b) => b.name.localeCompare(a.name));
-        setStreams(sorted);
-    }
 
     async function remove(id) {
         await API.deleteStream(String(id));
@@ -126,6 +195,12 @@ export function useStreams() {
         applyFilters,
         resetFilters,
         currentFilters: filters,
+        currentSorting: sorting, // Добавляем информацию о сортировке
         loading,
+        pages,
+        changePage,
+        reload: () => load(pages.current),
+        setSorting,
+        setPages,
     };
 }

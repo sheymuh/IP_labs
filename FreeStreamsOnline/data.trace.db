@@ -2,3 +2,7 @@
 org.h2.jdbc.JdbcSQLSyntaxErrorException: Таблица "DATABASECHANGELOGLOCK" не найдена
 Table "DATABASECHANGELOGLOCK" not found; SQL statement:
 SELECT COUNT(*) FROM PUBLIC.DATABASECHANGELOGLOCK [42102-240]
+2025-12-18 23:13:25.420096+04:00 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Синтаксическая ошибка в выражении SQL "([*]3, (SELECT currval('streams_seq')))"; ожидалось "(, SELECT, TABLE, VALUES"
+Syntax error in SQL statement "([*]3, (SELECT currval('streams_seq')))"; expected "(, SELECT, TABLE, VALUES"; SQL statement:
+(3, (SELECT currval('streams_seq'))) [42001-240]

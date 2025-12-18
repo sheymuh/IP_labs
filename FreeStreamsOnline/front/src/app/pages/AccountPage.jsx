@@ -1,19 +1,27 @@
 import { useNavigate } from 'react-router-dom';
 import { StreamsList } from '../components/StreamsList';
 import { useStreams } from '../hooks/useStreams';
+// @ts-ignore
+import { Pagination } from '../components/Pagination';
 
 export const AccountPage = () => {
     const { 
-        streams, 
-        categories, 
-        playlists, 
-        remove, 
+        streams,
+        categories,
+        playlists,
+        remove,
         sortAsc,
         sortDesc,
         applyFilters,
         resetFilters,
         currentFilters,
+        currentSorting,
         loading,
+        pages,
+        changePage,
+        reload,
+        setSorting,
+        setPages,
     } = useStreams();
     
     const navigate = useNavigate();
@@ -78,7 +86,10 @@ export const AccountPage = () => {
                     <div className="col-md-4 d-flex align-items-end">
                         <button 
                             className="btn btn-outline-secondary w-100"
-                            onClick={resetFilters}
+                            onClick={() => {
+                                resetFilters();
+                                reload();
+                            }}
                             disabled={loading}
                         >
                             Сбросить фильтры
@@ -86,6 +97,21 @@ export const AccountPage = () => {
                     </div>
                 </div>
             </div>
+            {(currentFilters.categoryId || currentFilters.playlistId) && (
+                <div className="alert alert-info mb-3">
+                    <strong>Применены фильтры:</strong>
+                    {currentFilters.categoryId && (
+                        <span className="ms-2">
+                            Категория: {categories.find(c => String(c.id) === currentFilters.categoryId)?.name}
+                        </span>
+                    )}
+                    {currentFilters.playlistId && (
+                        <span className="ms-2">
+                            Плейлист: {playlists.find(p => String(p.id) === currentFilters.playlistId)?.name}
+                        </span>
+                    )}
+                </div>
+            )}
 
             <div className="buttons d-flex align-items-center gap-3 mb-3">
                 <h2 className="mb-0">Начать новую трансляцию</h2>
@@ -95,23 +121,54 @@ export const AccountPage = () => {
                 >
                     Добавить
                 </button>
-                <button
-                    className="btn btn-primary"
-                    onClick={sortAsc}
-                >
-                    Отсортировать по возрастанию
-                </button>
                 
-                <button
-                    className="btn btn-primary"
-                    onClick={sortDesc}
-                >
-                    Отсортировать по убыванию
-                </button>
+                <div className="btn-group" role="group">
+                    <button
+                        className={`btn ${currentSorting.sortBy === 'name' && currentSorting.sortDirection === 'asc' ? 'btn-primary' : 'btn-outline-primary'}`}
+                        onClick={sortAsc}
+                    >
+                        Отсортировать по возрастанию
+                        {currentSorting.sortBy === 'name' && currentSorting.sortDirection === 'asc' && (
+                            <i className="bi bi-arrow-up ms-1"></i>
+                        )}
+                    </button>
+                    
+                    <button
+                        className={`btn ${currentSorting.sortBy === 'name' && currentSorting.sortDirection === 'desc' ? 'btn-primary' : 'btn-outline-primary'}`}
+                        onClick={sortDesc}
+                    >
+                        Отсортировать по убыванию
+                        {currentSorting.sortBy === 'name' && currentSorting.sortDirection === 'desc' && (
+                            <i className="bi bi-arrow-down ms-1"></i>
+                        )}
+                    </button>
+                    
+                    {(currentSorting.sortBy === 'name') && (
+                        <button
+                            className="btn btn-outline-secondary"
+                            onClick={() => {
+                                setSorting({ sortBy: null, sortDirection: 'asc' });
+                                setPages(prev => ({ ...prev, current: 1 }));
+                            }}
+                            title="Сбросить сортировку"
+                        >
+                            <i className="bi bi-x-lg"></i>
+                        </button>
+                    )}
+                </div>
             </div>
 
+            {(currentSorting.sortBy === 'name') && (
+                <div className="alert alert-info mb-3">
+                    <strong>Сортировка:</strong>
+                    <span className="ms-2">
+                        По названию ({currentSorting.sortDirection === 'asc' ? 'возрастание' : 'убывание'})
+                    </span>
+                </div>
+            )}
+
             <div id="streamsList" className="row mt-1">
-                <h3>Мои трансляции {streams.length > 0 && `(${streams.length})`}</h3>
+                <h3>Мои трансляции {pages.totalItems > 0 && `(${pages.totalItems})`}</h3>
                 
                 {loading ? (
                     <div className="alert alert-info">Загрузка данных...</div>
@@ -120,11 +177,29 @@ export const AccountPage = () => {
                         Нет трансляций, соответствующих выбранным фильтрам
                     </div>
                 ) : (
-                    <StreamsList
-                        streams={streams}
-                        onEdit={(s) => navigate(`/form/${s.id}`)}
-                        onDelete={remove}
-                    />
+                    <>
+                        <div className="mb-3">
+                            <small className="text-muted">
+                                Страница {pages.current} из {pages.total} 
+                                (показано {streams.length} из {pages.totalItems} трансляций)
+                            </small>
+                        </div>
+                        
+                        <StreamsList
+                            streams={streams}
+                            onEdit={(s) => navigate(`/form/${s.id}`)}
+                            onDelete={remove}
+                        />
+                        
+                        {/* Компонент пагинации */}
+                        {pages.total > 1 && (
+                            <Pagination 
+                                currentPage={pages.current}
+                                totalPages={pages.total}
+                                onPageChange={changePage}
+                            />
+                        )}
+                    </>
                 )}
             </div>
         </main>

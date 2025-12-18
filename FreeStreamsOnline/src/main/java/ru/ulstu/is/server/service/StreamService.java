@@ -3,6 +3,9 @@ package ru.ulstu.is.server.service;
 import java.time.LocalDate;
 import java.util.List;
 
+import org.springframework.data.jpa.domain.Specification;
+import jakarta.persistence.criteria.Join;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
@@ -12,6 +15,7 @@ import ru.ulstu.is.server.api.PageRs;
 import ru.ulstu.is.server.api.stream.StreamRq;
 import ru.ulstu.is.server.api.stream.StreamRs;
 import ru.ulstu.is.server.entity.CategoryEntity;
+import ru.ulstu.is.server.entity.CategoryStreamEntity;
 import ru.ulstu.is.server.entity.PlaylistEntity;
 import ru.ulstu.is.server.entity.StreamEntity;
 import ru.ulstu.is.server.error.NotFoundException;
@@ -52,6 +56,30 @@ public class StreamService {
     public StreamRs get(Long id) {
         final StreamEntity entity = getEntity(id);
         return StreamRs.from(entity);
+    }
+
+    @Transactional(readOnly = true)
+    public PageRs<StreamRs> getFiltered(Pageable pageable, Long categoryId, Long playlistId) {
+        Specification<StreamEntity> spec = Specification.where(null);
+
+        if (categoryId != null) {
+            spec = spec.and((root, query, cb) -> {
+                // Правильный join для связи многие-ко-многим
+                Join<StreamEntity, CategoryStreamEntity> categoryJoin = root.join("streamCategories");
+                Join<CategoryStreamEntity, CategoryEntity> category = categoryJoin.join("category");
+                return cb.equal(category.get("id"), categoryId);
+            });
+        }
+
+        if (playlistId != null) {
+            spec = spec.and((root, query, cb) -> {
+                Join<StreamEntity, PlaylistEntity> playlistJoin = root.join("playlist");
+                return cb.equal(playlistJoin.get("id"), playlistId);
+            });
+        }
+
+        Page<StreamEntity> page = repository.findAll(spec, pageable);
+        return PageRs.from(page, StreamRs::from);
     }
 
     @Transactional

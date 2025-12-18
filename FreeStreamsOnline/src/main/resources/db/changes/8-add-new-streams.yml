@@ -1,0 +1,136 @@
+databaseChangeLog:
+    - changeSet:
+          id: add-new-streams
+          author: user
+          changes:
+              - insert:
+                    tableName: streams
+                    columns:
+                        - column:
+                              name: id
+                              valueComputed: "nextval('streams_seq')"
+                        - column:
+                              name: name
+                              value: "videogaming"
+                        - column:
+                              name: image
+                              value: "/котиграет.jpg"
+                        - column:
+                              name: description
+                              value: "кот играет на приставке"
+                        - column:
+                              name: views
+                              value: 4609323
+                        - column:
+                              name: publication_date
+                              value: "2025-12-18"
+                        - column:
+                              name: playlist_id
+                              value: 1
+              - sql:
+                    sql: |
+                        INSERT INTO category_stream (category_id, stream_id)
+                        VALUES 
+                        (2, (SELECT currval('streams_seq')));
+              - insert:
+                    tableName: streams
+                    columns:
+                        - column:
+                              name: id
+                              valueComputed: "nextval('streams_seq')"
+                        - column:
+                              name: name
+                              value: "гайан рослинг"
+                        - column:
+                              name: image
+                              value: "/райангослинг.jpg"
+                        - column:
+                              name: description
+                              value: "в фильме драйв"
+                        - column:
+                              name: views
+                              value: 700567
+                        - column:
+                              name: publication_date
+                              value: "2025-12-18"
+                        - column:
+                              name: playlist_id
+                              value: 3
+              - sql:
+                    sql: |
+                        INSERT INTO category_stream (category_id, stream_id)
+                        VALUES 
+                        (1, (SELECT currval('streams_seq'))),
+                        (3, (SELECT currval('streams_seq')));
+              - insert:
+                    tableName: streams
+                    columns:
+                        - column:
+                              name: id
+                              valueComputed: "nextval('streams_seq')"
+                        - column:
+                              name: name
+                              value: "рыбачим"
+                        - column:
+                              name: image
+                              value: "/рыбалка.jpg"
+                        - column:
+                              name: description
+                              value: "ЖИРНЫЙ УЛОВ"
+                        - column:
+                              name: views
+                              value: 182000
+                        - column:
+                              name: publication_date
+                              value: "2025-12-18"
+                        - column:
+                              name: playlist_id
+                              value: 1
+              - sql:
+                    sql: |
+                        INSERT INTO category_stream (category_id, stream_id)
+                        VALUES 
+                        (1, (SELECT currval('streams_seq')));
+              - insert:
+                    tableName: streams
+                    columns:
+                        - column:
+                              name: id
+                              valueComputed: "nextval('streams_seq')"
+                        - column:
+                              name: name
+                              value: "NBA X-mas day!!!"
+                        - column:
+                              name: image
+                              value: "/xmas_nba.jpg"
+                        - column:
+                              name: description
+                              value: "S novim godom!!!"
+                        - column:
+                              name: views
+                              value: 311225
+                        - column:
+                              name: publication_date
+                              value: "2025-12-18"
+                        - column:
+                              name: playlist_id
+                              value: 2
+              - sql:
+                    sql: |
+                        INSERT INTO category_stream (category_id, stream_id)
+                        VALUES 
+                        (1, (SELECT currval('streams_seq')));
+          rollback:
+              - sql:
+                    sql: |
+                        -- Удаляем связи
+                        DELETE FROM category_stream 
+                        WHERE stream_id IN (
+                            SELECT id FROM streams 
+                            WHERE name IN ('Музыкальный концерт', 'Кулинарный мастер-класс')
+                        );
+
+                        -- Удаляем стримы
+                        DELETE FROM streams 
+                        WHERE name IN ('Музыкальный концерт', 'Кулинарный мастер-класс');
+                    comment: "Удалить добавленные стримы"

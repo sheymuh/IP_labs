@@ -9,6 +9,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Pageable;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
@@ -30,8 +33,29 @@ public class StreamController {
     @GetMapping
     public PageRs<StreamRs> getAll(
             @RequestParam(defaultValue = "1") @Min(1) int page,
-            @RequestParam(defaultValue = "10") @Min(1) int size) {
-        return streamService.getAll(PageHelper.toPageable(page, size));
+            @RequestParam(defaultValue = "6") @Min(1) int size,
+            @RequestParam(required = false) Long categoryId,
+            @RequestParam(required = false) Long playlistId,
+            @RequestParam(required = false) String sortBy,
+            @RequestParam(defaultValue = "asc") String sortDirection) {
+
+        Pageable pageable;
+
+        if (sortBy != null && !sortBy.isEmpty()) {
+            // Создаем Pageable с сортировкой
+            Sort sort = sortDirection.equalsIgnoreCase("desc")
+                    ? Sort.by(sortBy).descending()
+                    : Sort.by(sortBy).ascending();
+            pageable = PageRequest.of(page - 1, size, sort);
+        } else {
+            // Без сортировки
+            pageable = PageHelper.toPageable(page, size);
+        }
+
+        if (categoryId != null || playlistId != null) {
+            return streamService.getFiltered(pageable, categoryId, playlistId);
+        }
+        return streamService.getAll(pageable);
     }
 
     @GetMapping("/{id}")
