@@ -1,0 +1,81 @@
+databaseChangeLog:
+    - changeSet:
+          id: create-tables
+          author: user
+          changes:
+              - createTable:
+                    tableName: categories
+                    columns:
+                        - column:
+                              name: id
+                              type: BIGINT
+                              constraints:
+                                  primaryKey: true
+                                  nullable: false
+                                  primaryKeyName: pk_categories
+                        - column:
+                              name: name
+                              type: VARCHAR(100)
+                              constraints:
+                                  nullable: false
+                                  unique: true
+                        - column:
+                              name: age_limit
+                              type: BIGINT
+                              constraints:
+                                  nullable: false
+              - createTable:
+                    tableName: playlists
+                    columns:
+                        - column:
+                              name: id
+                              type: BIGINT
+                              constraints:
+                                  primaryKey: true
+                                  nullable: false
+                                  primaryKeyName: pk_playlists
+                        - column:
+                              name: name
+                              type: VARCHAR(255)
+                              constraints:
+                                  nullable: false
+              - createTable:
+                    tableName: streams
+                    columns:
+                        - column:
+                              name: id
+                              type: BIGINT
+                              constraints:
+                                  primaryKey: true
+                                  nullable: false
+                                  primaryKeyName: pk_streams
+                        - column:
+                              name: name
+                              type: VARCHAR(255)
+                              constraints:
+                                  nullable: false
+                        - column:
+                              name: image
+                              type: CLOB
+                        - column:
+                              name: description
+                              type: VARCHAR(255)
+                              constraints:
+                                  nullable: false
+                        - column:
+                              name: views
+                              type: BIGINT
+                              constraints:
+                                  nullable: false
+                        - column:
+                              name: publication_date
+                              type: DATE
+                              constraints:
+                                  nullable: false
+                        - column:
+                              name: playlist_id
+                              type: BIGINT
+                              constraints:
+                                  nullable: false
+                                  foreignKeyName: fk_stream_playlist
+                                  references: playlists(id)

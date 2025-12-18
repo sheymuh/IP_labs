@@ -1,0 +1,26 @@
+databaseChangeLog:
+    - changeSet:
+          id: create-sequences
+          author: user
+          changes:
+              - createSequence:
+                    sequenceName: categories_seq
+                    startValue: 1
+                    incrementBy: 50
+                    minValue: 1
+                    cycle: false
+                    dataType: bigint
+              - createSequence:
+                    sequenceName: playlists_seq
+                    startValue: 1
+                    incrementBy: 50
+                    minValue: 1
+                    cycle: false
+                    dataType: bigint
+              - createSequence:
+                    sequenceName: streams_seq
+                    startValue: 1
+                    incrementBy: 50
+                    minValue: 1
+                    cycle: false
+                    dataType: bigint

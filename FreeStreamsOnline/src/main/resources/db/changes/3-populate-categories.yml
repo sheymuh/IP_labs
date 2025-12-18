@@ -1,0 +1,54 @@
+databaseChangeLog:
+    - changeSet:
+          id: populate-categories
+          author: user
+          changes:
+              - insert:
+                    tableName: categories
+                    columns:
+                        - column:
+                              name: id
+                              value: 1
+                        - column:
+                              name: name
+                              value: "jst vibing"
+                        - column:
+                              name: age_limit
+                              value: 16
+              - insert:
+                    tableName: categories
+                    columns:
+                        - column:
+                              name: id
+                              value: 2
+                        - column:
+                              name: name
+                              value: "letsplay"
+                        - column:
+                              name: age_limit
+                              value: 10
+              - insert:
+                    tableName: categories
+                    columns:
+                        - column:
+                              name: id
+                              value: 3
+                        - column:
+                              name: name
+                              value: "cooking"
+                        - column:
+                              name: age_limit
+                              value: 12
+              - sql:
+                    sql: "SELECT setval('categories_seq', COALESCE((SELECT MAX(id) FROM categories), 1))"
+                    dbms: postgresql
+              - sql:
+                    sql: "ALTER SEQUENCE categories_seq RESTART WITH (SELECT COALESCE(MAX(id), 1) FROM categories)"
+                    dbms: h2
+          rollback:
+              - sql:
+                    sql: "SELECT setval('categories_seq', COALESCE((SELECT MAX(id) FROM categories), 1))"
+                    dbms: postgresql
+              - sql:
+                    sql: "ALTER SEQUENCE categories_seq RESTART WITH (SELECT COALESCE(MAX(id), 1) FROM categories)"
+                    dbms: h2

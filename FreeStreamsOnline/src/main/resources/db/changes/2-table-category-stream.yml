@@ -1,0 +1,26 @@
+databaseChangeLog:
+    - changeSet:
+          id: create-table-category-stream
+          author: user
+          changes:
+              - createTable:
+                    tableName: category_stream
+                    columns:
+                        - column:
+                              name: category_id
+                              type: BIGINT
+                              constraints:
+                                  primaryKey: true
+                                  nullable: false
+                                  primaryKeyName: pk_category_stream
+                                  foreignKeyName: fk_cs_category
+                                  references: categories(id)
+                        - column:
+                              name: stream_id
+                              type: BIGINT
+                              constraints:
+                                  primaryKey: true
+                                  nullable: false
+                                  primaryKeyName: pk_category_stream
+                                  foreignKeyName: fk_cs_stream
+                                  references: streams(id)

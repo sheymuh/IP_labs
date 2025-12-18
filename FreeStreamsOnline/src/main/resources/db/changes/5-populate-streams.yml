@@ -1,0 +1,84 @@
+databaseChangeLog:
+    - changeSet:
+          id: populate-streams
+          author: user
+          changes:
+              - insert:
+                    tableName: streams
+                    columns:
+                        - column:
+                              name: id
+                              valueComputed: "nextval('streams_seq')"
+                        - column:
+                              name: name
+                              value: "new_vid"
+                        - column:
+                              name: image
+                              value: "\\STREAM.jpg"
+                        - column:
+                              name: description
+                              value: "very new"
+                        - column:
+                              name: views
+                              value: 12741
+                        - column:
+                              name: publication_date
+                              value: "2025-12-18"
+                        - column:
+                              name: playlist_id
+                              value: 3
+              - insert:
+                    tableName: streams
+                    columns:
+                        - column:
+                              name: id
+                              valueComputed: "nextval('streams_seq')"
+                        - column:
+                              name: name
+                              value: "marmok"
+                        - column:
+                              name: image
+                              value: "\\mmmMARMOK.jpg"
+                        - column:
+                              name: description
+                              value: "mmm MARMOK"
+                        - column:
+                              name: views
+                              value: 5169067
+                        - column:
+                              name: publication_date
+                              value: "2025-12-09"
+                        - column:
+                              name: playlist_id
+                              value: 1
+              - insert:
+                    tableName: streams
+                    columns:
+                        - column:
+                              name: id
+                              valueComputed: "nextval('streams_seq')"
+                        - column:
+                              name: name
+                              value: "KING"
+                        - column:
+                              name: image
+                              value: "\\king.jpg"
+                        - column:
+                              name: description
+                              value: "Bronny J"
+                        - column:
+                              name: views
+                              value: 10000000
+                        - column:
+                              name: publication_date
+                              value: "2025-12-15"
+                        - column:
+                              name: playlist_id
+                              value: 2
+          rollback:
+              - sql:
+                    sql: "SELECT setval('streams_seq', COALESCE((SELECT MAX(id) FROM streams), 1))"
+                    dbms: postgresql
+              - sql:
+                    sql: "ALTER SEQUENCE streams_seq RESTART WITH (SELECT COALESCE(MAX(id), 1) FROM streams)"
+                    dbms: h2

@@ -1,0 +1,23 @@
+databaseChangeLog:
+    - changeSet:
+          id: populate-stream-categories
+          author: user
+          changes:
+              - sql:
+                    sql: |
+                        INSERT INTO category_stream (category_id, stream_id)
+                        SELECT 
+                          c.id as category_id,
+                          s.id as stream_id
+                        FROM categories c
+                        CROSS JOIN streams s
+                        WHERE NOT EXISTS (
+                          SELECT 1 FROM category_stream g 
+                          WHERE g.category_id = c.id AND g.stream_id = s.id
+                        );
+                    comment: "Fill category_stream table with ids"
+          rollback:
+              - sql:
+                    sql: |
+                        DELETE FROM category_stream;
+                    comment: "Clear category_stream table"

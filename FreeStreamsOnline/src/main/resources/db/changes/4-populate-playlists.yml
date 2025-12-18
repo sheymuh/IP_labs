@@ -1,0 +1,45 @@
+databaseChangeLog:
+    - changeSet:
+          id: populate-playlists
+          author: user
+          changes:
+              - insert:
+                    tableName: playlists
+                    columns:
+                        - column:
+                              name: id
+                              value: 1
+                        - column:
+                              name: name
+                              value: "Very good videos"
+              - insert:
+                    tableName: playlists
+                    columns:
+                        - column:
+                              name: id
+                              value: 2
+                        - column:
+                              name: name
+                              value: "baskemtbal"
+              - insert:
+                    tableName: playlists
+                    columns:
+                        - column:
+                              name: id
+                              value: 3
+                        - column:
+                              name: name
+                              value: "How to make a nuclear bomb at home! Guide"
+              - sql:
+                    sql: "SELECT setval('playlists_seq', COALESCE((SELECT MAX(id) FROM playlists), 1))"
+                    dbms: postgresql
+              - sql:
+                    sql: "ALTER SEQUENCE playlists_seq RESTART WITH (SELECT COALESCE(MAX(id), 1) FROM playlists)"
+                    dbms: h2
+          rollback:
+              - sql:
+                    sql: "SELECT setval('playlists_seq', COALESCE((SELECT MAX(id) FROM playlists), 1))"
+                    dbms: postgresql
+              - sql:
+                    sql: "ALTER SEQUENCE playlists_seq RESTART WITH (SELECT COALESCE(MAX(id), 1) FROM playlists)"
+                    dbms: h2

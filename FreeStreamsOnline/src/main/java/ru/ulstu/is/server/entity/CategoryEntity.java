@@ -14,6 +14,8 @@ import jakarta.persistence.Table;
 public class CategoryEntity extends BaseEntity {
     @Column(length = 100, nullable = false, unique = true)
     private String name;
+
+    @Column(name = "age_limit", nullable = false)
     private int ageLimit;
 
     @OneToMany(mappedBy = "category")

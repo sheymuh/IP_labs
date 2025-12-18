@@ -30,8 +30,10 @@ public class StreamEntity extends BaseEntity {
     @Column(nullable = false)
     private String description;
 
+    @Column(nullable = false)
     private int views;
 
+    @Column(name = "publication_date", nullable = false)
     private LocalDate publicationDate;
 
     @JoinColumn(name = "playlist_id", nullable = false)

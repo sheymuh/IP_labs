@@ -11,8 +11,8 @@ public record StreamRq(
         @NotBlank String name,
         String image,
         String description,
-        int views,
-        @JsonProperty("publication_date") String publicationDate,
+        @NotNull int views,
+        @NotNull @JsonProperty("publication_date") String publicationDate,
         @NotNull Long playlistId,
         @NotNull List<Long> categoryIds) { // Список ID категорий
 }
