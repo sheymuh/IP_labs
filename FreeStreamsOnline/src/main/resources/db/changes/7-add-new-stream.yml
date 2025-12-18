@@ -1,0 +1,45 @@
+databaseChangeLog:
+    - changeSet:
+          id: add-new-stream
+          author: user
+          changes:
+              - insert:
+                    tableName: streams
+                    columns:
+                        - column:
+                              name: id
+                              valueComputed: "nextval('streams_seq')"
+                        - column:
+                              name: name
+                              value: "Новый стрим"
+                        - column:
+                              name: image
+                              value: "/папаня.jpg"
+                        - column:
+                              name: description
+                              value: "Описание нового стрима"
+                        - column:
+                              name: views
+                              value: 5000
+                        - column:
+                              name: publication_date
+                              value: "2025-12-18"
+                        - column:
+                              name: playlist_id
+                              value: 1
+              - sql:
+                    sql: |
+                        INSERT INTO category_stream (category_id, stream_id)
+                        VALUES 
+                        (1, (SELECT currval('streams_seq'))),  -- Категория 1
+                        (2, (SELECT currval('streams_seq')));  -- Категория 2
+                    comment: "Добавить связи с категориями"
+          rollback:
+              - sql:
+                    sql: |
+                        DELETE FROM category_stream 
+                        WHERE stream_id = (SELECT currval('streams_seq'));
+
+                        DELETE FROM streams 
+                        WHERE id = (SELECT currval('streams_seq'));
+                    comment: "Удалить новый стрим и его связи"

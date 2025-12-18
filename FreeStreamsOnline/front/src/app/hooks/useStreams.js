@@ -31,18 +31,25 @@ export function useStreams() {
             console.log("Categories data:", categoriesData);
             console.log("Playlists data:", playlistsData);
 
-            const extended = streamsData.map((stream) => ({
+            // ИЗМЕНЕНИЕ: Извлекаем items из Page объекта
+            const streamsItems = streamsData.items || streamsData.content || streamsData;
+            const categoriesItems = categoriesData.items || categoriesData.content || categoriesData;
+            const playlistsItems = playlistsData.items || playlistsData.content || playlistsData;
+
+            const extended = streamsItems.map((stream) => ({
                 ...stream,
                 id: String(stream.id),
                 playlistId: stream.playlist ? String(stream.playlist.id) : "",
                 categoryId: stream.category ? String(stream.category.id) : "",
+                // Если категории приходят как массив в stream.categories
+                categories: stream.categories || [],
                 category: stream.category,
                 playlist: stream.playlist,
             }));
 
             setStreams(extended);
-            setCategories(categoriesData || []);
-            setPlaylists(playlistsData || []);
+            setCategories(Array.isArray(categoriesItems) ? categoriesItems : []);
+            setPlaylists(Array.isArray(playlistsItems) ? playlistsItems : []);
         } catch (error) {
             console.error("Error loading data:", error);
             setCategories([]);
@@ -67,8 +74,13 @@ export function useStreams() {
     }
 
     const filteredStreams = streams.filter((stream) => {
-        const matchesCategory = !filters.categoryId || String(stream.categoryId) === filters.categoryId;
+        const matchesCategory =
+            !filters.categoryId ||
+            (stream.categories && stream.categories.some((cat) => String(cat.id) === filters.categoryId)) ||
+            String(stream.categoryId) === filters.categoryId;
+
         const matchesPlaylist = !filters.playlistId || String(stream.playlistId) === filters.playlistId;
+
         return matchesCategory && matchesPlaylist;
     });
 
@@ -88,18 +100,16 @@ export function useStreams() {
     }
 
     async function save(stream) {
-        const saveStream = {
-            name: stream.name,
-            image: stream.image,
-            description: stream.description,
-            playlistId: Number(stream.playlistId),
-            categoryId: Number(stream.categoryId),
+        const streamWithStringIds = {
+            ...stream,
+            playlistId: String(stream.playlistId),
+            categoryIds: stream.categories ? stream.categories.map((cat) => String(cat.id)) : [],
         };
 
         if (stream.id) {
-            await API.updateStream(String(stream.id), saveStream);
+            await API.updateStream(String(stream.id), streamWithStringIds);
         } else {
-            await API.createStream(saveStream);
+            await API.createStream(streamWithStringIds);
         }
         await load();
     }

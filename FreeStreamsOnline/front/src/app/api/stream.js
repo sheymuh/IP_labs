@@ -1,6 +1,9 @@
 const BASE = "http://localhost:8080/api/1.0/stream";
 
-export const fetchStreams = () => fetch(`${BASE}`).then((r) => r.json());
+export const fetchStreams = () =>
+    fetch(`${BASE}`)
+        .then((r) => r.json())
+        .then((data) => data.items || data.content || data); // Извлекаем items
 
 export const fetchStream = (id) => fetch(`${BASE}/${id}`).then((r) => r.json());
 
