@@ -7,7 +7,7 @@ logging:
                     server: INFO
 spring:
     datasource:
-        url: jdbc:postgresql://127.0.0.1/is-demo
+        url: jdbc:postgresql://127.0.0.1/fs_online
         username: postgres
         password: postgres
         driver-class-name: org.postgresql.Driver

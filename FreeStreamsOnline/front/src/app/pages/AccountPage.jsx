@@ -19,6 +19,7 @@ export const AccountPage = () => {
         loading,
         pages,
         changePage,
+        changePageSize,
         reload,
         setSorting,
         setPages,
@@ -82,6 +83,23 @@ export const AccountPage = () => {
                         {playlists.length === 0 && !loading && (
                             <div className="text-danger small">Нет доступных плейлистов</div>
                         )}
+                    </div>
+                    {/* Новый селектор для выбора количества элементов на странице */}
+                    <div className="col-md-3">
+                        <label className="form-label">Элементов на странице:</label>
+                        <select 
+                            className="form-select"
+                            value={pages.size}
+                            onChange={(e) => changePageSize(e.target.value)}
+                            disabled={loading}
+                        >
+                            <option value="3">3</option>
+                            <option value="6">6</option>
+                            <option value="12">12</option>
+                            <option value="24">24</option>
+                            <option value="50">50</option>
+                            <option value="100">100</option>
+                        </select>
                     </div>
                     <div className="col-md-4 d-flex align-items-end">
                         <button 

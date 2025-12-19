@@ -29,6 +29,11 @@ export function useStreams() {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
+        // Перезагружаем данные при изменении размера страницы
+        load(1); // Всегда начинаем с первой страницы при изменении размера
+    }, [pages.size]);
+
+    useEffect(() => {
         load(pages.current);
     }, [pages.current, filters.categoryId, filters.playlistId, sorting.sortBy, sorting.sortDirection]);
 
@@ -150,6 +155,17 @@ export function useStreams() {
         }
     }
 
+    function changePageSize(size) {
+        const newSize = parseInt(size);
+        if (newSize > 0) {
+            setPages((prev) => ({
+                ...prev,
+                size: newSize,
+                current: 1, // Сбрасываем на первую страницу
+            }));
+        }
+    }
+
     const filteredStreams = streams.filter((stream) => {
         // Проверяем по списку категорий
         const matchesCategory =
@@ -199,6 +215,7 @@ export function useStreams() {
         loading,
         pages,
         changePage,
+        changePageSize,
         reload: () => load(pages.current),
         setSorting,
         setPages,

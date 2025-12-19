@@ -65,11 +65,13 @@ public class StreamController {
 
     @PostMapping
     public StreamRs create(@RequestBody @Valid StreamRq dto) {
+        System.out.println("Creating stream with data: " + dto);
         return streamService.create(dto);
     }
 
     @PutMapping("/{id}")
     public StreamRs update(@PathVariable("id") Long id, @RequestBody @Valid StreamRq dto) {
+        System.out.println("Updating stream " + id + " with data: " + dto);
         return streamService.update(id, dto);
     }
 

@@ -7,51 +7,76 @@ export default function StreamForm({ id, onSuccess }) {
   const [name, setName] = useState('');
   const [image, setImage] = useState('');
   const [description, setDesc] = useState('');
+  const [views, setViews] = useState('');
+  const [publicationDate, setPublicationDate] = useState('');
   const [playlistId, setPlaylist] = useState('');
   const [categoryId, setCategory] = useState('');
   const [playlists, setPlaylists] = useState([]);
   const [categories, setCategories] = useState([]);
 
   console.log('StreamForm - id:', id);
+    useEffect(() => {
+        console.log('useEffect triggered, id:', id);
 
-  useEffect(() => {
-    console.log('useEffect triggered, id:', id);
+        CategoryAPI.fetchCategories().then(setCategories);
+        PlaylistAPI.fetchPlaylists().then(setPlaylists);
 
-    CategoryAPI.fetchCategories().then(setCategories);
-    PlaylistAPI.fetchPlaylists().then(setPlaylists);
-
-    if (id) {
-      String(id);
-      API.fetchStream(id).then((s) => {
-        console.log('Fetching stream with id:', id);
-
-        setName(s.name);
-        setImage(s.image);
-        setDesc(s.description);
-        setPlaylist(String(s.playlistId));
-        setCategory(String(s.categoryId));
-      }).catch(error => {
-        console.error('Error fetching stream:', error);
-      });
-    }
-  }, [id]);
-
-  async function handleSubmit(e) {
-    e.preventDefault();
-    const stream = { 
-      name, 
-      image, 
-      description, 
-      playlistId: String(playlistId), // Преобразуем в строку
-      categoryId: String(categoryId)   // Преобразуем в строку
-    };
+        if (id) {
+            const streamId = String(id);
+            console.log('Fetching stream with id:', streamId);
+            
+            API.fetchStream(streamId)
+                .then((s) => {
+                    console.log('Fetched stream:', s);
+                    
+                    setName(s.name || '');
+                    setImage(s.image || '');
+                    setDesc(s.description || '');
+                    setViews(s.views || 0);  // Добавить
+                    setPublicationDate(s.publicationDate || new Date().toISOString().split('T')[0]); // Добавить
+                    setPlaylist(String(s.playlist?.id || ''));
+                    
+                    // Берем первую категорию из массива
+                    if (s.categories && s.categories.length > 0) {
+                        setCategory(String(s.categories[0].id));
+                    } else {
+                        setCategory('');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching stream:', error);
+                    alert('Не удалось загрузить стрим для редактирования');
+                });
+        }
+    }, [id]);
     
-    if (id) {
-      await API.updateStream(String(id), stream);
+    async function handleSubmit(e) {
+        e.preventDefault();
+        
+        // Правильная структура согласно StreamRq.java
+        const stream = { 
+            name, 
+            image, 
+            description, 
+            views: 0,  // Добавляем views (обязательное поле)
+            publication_date: new Date().toISOString().split('T')[0], // Текущая дата
+            playlistId: String(playlistId), 
+            categoryIds: categoryId ? [Number(categoryId)] : []  // Массив ID категорий
+        };
+        
+        console.log("Submitting stream data:", JSON.stringify(stream, null, 2));
+        
+        try {
+            if (id) {
+                await API.updateStream(String(id), stream);
+            }
+            else await API.createStream(stream);
+            onSuccess();
+        } catch (error) {
+            console.error("Error submitting stream:", error);
+            alert("Ошибка при сохранении: " + error.message);
+        }
     }
-    else await API.createStream(stream);
-    onSuccess();
-  }
 
   function handleFileChange(e) {
     const file = e.target.files[0];
@@ -90,6 +115,29 @@ export default function StreamForm({ id, onSuccess }) {
           required
         ></textarea>
       </div>
+
+        <div className="mb-3">
+            <label className="form-label">Просмотры </label>
+            <input
+                type="number"
+                className="form-control"
+                value={views}
+                onChange={(e) => setViews(e.target.value)}
+                required
+                min="0"
+            />
+        </div>
+
+        <div className="mb-3">
+            <label className="form-label">Дата публикации </label>
+            <input
+                type="date"
+                className="form-control"
+                value={publicationDate}
+                onChange={(e) => setPublicationDate(e.target.value)}
+                required
+            />
+        </div>
 
       <div className="mb-3">
         <label className="form-label">Изображение (файл) </label>

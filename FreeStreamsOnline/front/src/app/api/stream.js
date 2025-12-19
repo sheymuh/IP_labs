@@ -31,21 +31,45 @@ export const fetchStreams = (
         });
 };
 
-export const fetchStream = (id) => fetch(`${BASE}/${id}`).then((r) => r.json());
+export const fetchStream = (id) =>
+    fetch(`${BASE}/${id}`).then((r) => {
+        if (!r.ok) {
+            throw new Error(`HTTP error! status: ${r.status}`);
+        }
+        return r.json();
+    });
 
 export const createStream = (s) =>
     fetch(BASE, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(s),
-    }).then((r) => r.json());
+    }).then((r) => {
+        console.log("Create stream response status:", r.status);
+        if (!r.ok) {
+            return r.text().then((text) => {
+                console.error("Server response:", text);
+                throw new Error(`HTTP ${r.status}: ${text}`);
+            });
+        }
+        return r.json();
+    });
 
 export const updateStream = (id, s) =>
     fetch(`${BASE}/${id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(s),
-    }).then((r) => r.json());
+    }).then((r) => {
+        console.log("Update stream response status:", r.status);
+        if (!r.ok) {
+            return r.text().then((text) => {
+                console.error("Server response:", text);
+                throw new Error(`HTTP ${r.status}: ${text}`);
+            });
+        }
+        return r.json();
+    });
 
 export const deleteStream = (id) =>
     fetch(`${BASE}/${id}`, {

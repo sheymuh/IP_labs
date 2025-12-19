@@ -1,8 +1,9 @@
 export const Pagination = ({ currentPage, totalPages, onPageChange }) => {
-    const pageNumbers = [];
+    if (totalPages <= 1) return null;
     
-    // Логика для отображения ограниченного количества страниц
+    const pageNumbers = [];
     const maxPagesToShow = 5;
+    
     let startPage = Math.max(1, currentPage - Math.floor(maxPagesToShow / 2));
     let endPage = Math.min(totalPages, startPage + maxPagesToShow - 1);
     
@@ -15,36 +16,37 @@ export const Pagination = ({ currentPage, totalPages, onPageChange }) => {
     }
     
     return (
-        <nav aria-label="Пагинация">
+        <nav aria-label="Навигация по страницам">
             <ul className="pagination justify-content-center">
-                {/* Кнопка "Назад" */}
+                {/* Кнопка "Первая страница" */}
+                <li className={`page-item ${currentPage === 1 ? 'disabled' : ''}`}>
+                    <button
+                        className="page-link"
+                        onClick={() => onPageChange(1)}
+                        disabled={currentPage === 1}
+                        aria-label="Первая страница"
+                    >
+                        <i className="bi bi-chevron-double-left"></i>
+                    </button>
+                </li>
+                
+                {/* Кнопка "Предыдущая" */}
                 <li className={`page-item ${currentPage === 1 ? 'disabled' : ''}`}>
                     <button
                         className="page-link"
                         onClick={() => onPageChange(currentPage - 1)}
                         disabled={currentPage === 1}
+                        aria-label="Предыдущая страница"
                     >
-                        &laquo;
+                        <i className="bi bi-chevron-left"></i>
                     </button>
                 </li>
                 
-                {/* Первая страница и многоточие */}
+                {/* Многоточие в начале */}
                 {startPage > 1 && (
-                    <>
-                        <li className="page-item">
-                            <button
-                                className="page-link"
-                                onClick={() => onPageChange(1)}
-                            >
-                                1
-                            </button>
-                        </li>
-                        {startPage > 2 && (
-                            <li className="page-item disabled">
-                                <span className="page-link">...</span>
-                            </li>
-                        )}
-                    </>
+                    <li className="page-item disabled">
+                        <span className="page-link">...</span>
+                    </li>
                 )}
                 
                 {/* Номера страниц */}
@@ -56,39 +58,42 @@ export const Pagination = ({ currentPage, totalPages, onPageChange }) => {
                         <button
                             className="page-link"
                             onClick={() => onPageChange(number)}
+                            aria-label={`Страница ${number}`}
+                            aria-current={currentPage === number ? 'page' : undefined}
                         >
                             {number}
                         </button>
                     </li>
                 ))}
                 
-                {/* Многоточие и последняя страница */}
+                {/* Многоточие в конце */}
                 {endPage < totalPages && (
-                    <>
-                        {endPage < totalPages - 1 && (
-                            <li className="page-item disabled">
-                                <span className="page-link">...</span>
-                            </li>
-                        )}
-                        <li className="page-item">
-                            <button
-                                className="page-link"
-                                onClick={() => onPageChange(totalPages)}
-                            >
-                                {totalPages}
-                            </button>
-                        </li>
-                    </>
+                    <li className="page-item disabled">
+                        <span className="page-link">...</span>
+                    </li>
                 )}
                 
-                {/* Кнопка "Вперед" */}
+                {/* Кнопка "Следующая" */}
                 <li className={`page-item ${currentPage === totalPages ? 'disabled' : ''}`}>
                     <button
                         className="page-link"
                         onClick={() => onPageChange(currentPage + 1)}
                         disabled={currentPage === totalPages}
+                        aria-label="Следующая страница"
                     >
-                        &raquo;
+                        <i className="bi bi-chevron-right"></i>
+                    </button>
+                </li>
+                
+                {/* Кнопка "Последняя страница" */}
+                <li className={`page-item ${currentPage === totalPages ? 'disabled' : ''}`}>
+                    <button
+                        className="page-link"
+                        onClick={() => onPageChange(totalPages)}
+                        disabled={currentPage === totalPages}
+                        aria-label="Последняя страница"
+                    >
+                        <i className="bi bi-chevron-double-right"></i>
                     </button>
                 </li>
             </ul>
