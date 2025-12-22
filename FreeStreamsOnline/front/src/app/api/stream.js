@@ -39,37 +39,43 @@ export const fetchStream = (id) =>
         return r.json();
     });
 
-export const createStream = (s) =>
-    fetch(BASE, {
+export const createStream = (streamData) => {
+    console.log("Creating stream with FULL data:", JSON.stringify(streamData, null, 2));
+
+    return fetch(BASE, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(s),
+        body: JSON.stringify(streamData),
     }).then((r) => {
         console.log("Create stream response status:", r.status);
         if (!r.ok) {
             return r.text().then((text) => {
-                console.error("Server response:", text);
+                console.error("Server error response:", text);
                 throw new Error(`HTTP ${r.status}: ${text}`);
             });
         }
         return r.json();
     });
+};
 
-export const updateStream = (id, s) =>
-    fetch(`${BASE}/${id}`, {
+export const updateStream = (id, streamData) => {
+    console.log("Updating stream", id, "with FULL data:", JSON.stringify(streamData, null, 2));
+
+    return fetch(`${BASE}/${id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(s),
+        body: JSON.stringify(streamData),
     }).then((r) => {
         console.log("Update stream response status:", r.status);
         if (!r.ok) {
             return r.text().then((text) => {
-                console.error("Server response:", text);
+                console.error("Server error response:", text);
                 throw new Error(`HTTP ${r.status}: ${text}`);
             });
         }
         return r.json();
     });
+};
 
 export const deleteStream = (id) =>
     fetch(`${BASE}/${id}`, {

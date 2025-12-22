@@ -71,6 +71,8 @@ export function useStreams() {
             const extended = streamsItems.map((stream) => ({
                 ...stream,
                 id: String(stream.id),
+                publicationDate: stream.publication_date || stream.publicationDate,
+                views: stream.views || 0,
                 playlistId: stream.playlist ? String(stream.playlist.id) : "",
                 categories: stream.categories || [],
                 category: stream.categories && stream.categories.length > 0 ? stream.categories[0] : null,

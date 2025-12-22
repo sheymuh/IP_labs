@@ -64,7 +64,6 @@ public class StreamService {
 
         if (categoryId != null) {
             spec = spec.and((root, query, cb) -> {
-                // Правильный join для связи многие-ко-многим
                 Join<StreamEntity, CategoryStreamEntity> categoryJoin = root.join("streamCategories");
                 Join<CategoryStreamEntity, CategoryEntity> category = categoryJoin.join("category");
                 return cb.equal(category.get("id"), categoryId);
@@ -86,15 +85,17 @@ public class StreamService {
     public StreamRs create(StreamRq dto) {
         final PlaylistEntity playlist = playlistService.getEntity(dto.playlistId());
 
+        int randomViews = 100 + (int) (Math.random() * 999901); // 100 - 1,000,000
+        LocalDate currentDate = LocalDate.now();
+
         StreamEntity entity = new StreamEntity(
                 dto.name(),
                 dto.image(),
                 dto.description(),
-                dto.views(),
-                LocalDate.parse(dto.publicationDate()),
+                randomViews,
+                currentDate,
                 playlist);
 
-        // Добавляем категории
         for (Long categoryId : dto.categoryIds()) {
             CategoryEntity category = categoryService.getEntity(categoryId);
             entity.addCategory(category);
@@ -110,15 +111,10 @@ public class StreamService {
         entity.setName(dto.name());
         entity.setImage(dto.image());
         entity.setDescription(dto.description());
-        entity.setViews(dto.views());
-        entity.setPubDate(LocalDate.parse(dto.publicationDate()));
         entity.setPlaylist(playlistService.getEntity(dto.playlistId()));
 
-        // Обновляем категории
-        // 1. Удаляем старые связи
         entity.getCategories().forEach(entity::removeCategory);
 
-        // 2. Добавляем новые
         for (Long categoryId : dto.categoryIds()) {
             CategoryEntity category = categoryService.getEntity(categoryId);
             entity.addCategory(category);
